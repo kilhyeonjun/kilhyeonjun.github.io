@@ -2,7 +2,7 @@ module.exports = {
   title: `성장 기록 블로그`,
   description: `Blog posted about ...`,
   author: `kilhyeonjun`,
-  introduction: `I explain with words and code. I explain with words and code. I explain with words and code.`,
+  introduction: `Java SpringBoot로 시작해서 TypeScript Express.JS/NestJS를 하는 주니어 백엔드 개발자입니다.`,
   siteUrl: `https://kilhyeonjun.github.io/`, // Your blog site url
   social: {
     twitter: ``, // Your Twitter account
@@ -13,7 +13,24 @@ module.exports = {
     instagram: ``, // Your Instagram account
   },
   icon: `content/assets/felog.png`, // Add your favicon
-  keywords: [`kilhyeonjun`, `blog`, `developer`, `development`, `fullstack`, `backend`, `express`, `spring`, `java`, `golang`, `go`, `frontend`, `react`, `web`, `javascript`, `typescript`,],
+  keywords: [
+    `kilhyeonjun`,
+    `blog`,
+    `developer`,
+    `development`,
+    `fullstack`,
+    `backend`,
+    `express`,
+    `spring`,
+    `java`,
+    `golang`,
+    `go`,
+    `frontend`,
+    `react`,
+    `web`,
+    `javascript`,
+    `typescript`,
+  ],
   comment: {
     disqusShortName: '', // Your disqus-short-name. check disqus.com.
     utterances: 'kilhyeonjun/kilhyeonjun.github.io', // Your repository for archive comment
@@ -29,5 +46,4 @@ module.exports = {
   },
   ga: '0', // Add your google analytics tranking ID
   ad: '', // Add your google adsense publisherId `ca-pub-xxxxxxxxxx`
-
 }
