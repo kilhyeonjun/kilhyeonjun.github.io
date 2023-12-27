@@ -2,7 +2,6 @@
 title: Git 기본 명령어
 date: 2021-09-12 00:40:00
 category: git
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

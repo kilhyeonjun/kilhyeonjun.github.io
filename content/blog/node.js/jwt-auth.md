@@ -2,7 +2,6 @@
 title: Node.js JWT 회원 인증
 date: 2022-05-18 20:05:94
 category: node.js
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

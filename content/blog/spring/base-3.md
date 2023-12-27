@@ -2,7 +2,6 @@
 title: springboot 3.동작원리
 date: 2021-09-12 21:00:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

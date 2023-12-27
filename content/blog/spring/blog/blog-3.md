@@ -2,7 +2,6 @@
 title: springboot 블로그 3.MySQL 한글 설정 및 연결
 date: 2021-09-15 22:40:01
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

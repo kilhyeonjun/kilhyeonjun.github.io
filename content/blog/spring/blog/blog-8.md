@@ -2,7 +2,6 @@
 title: springboot 블로그 8.테이블 생성하기
 date: 2021-09-17 03:45:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

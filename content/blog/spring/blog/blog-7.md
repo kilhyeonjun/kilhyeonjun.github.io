@@ -2,7 +2,6 @@
 title: springboot 블로그 7.Lombok 세팅
 date: 2021-09-17 02:45:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

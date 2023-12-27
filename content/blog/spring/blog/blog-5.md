@@ -2,7 +2,6 @@
 title: springboot 블로그 5.HTTP1.1 체험하기
 date: 2021-09-17 00:15:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

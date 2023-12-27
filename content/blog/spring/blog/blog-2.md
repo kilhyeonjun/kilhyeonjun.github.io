@@ -2,7 +2,6 @@
 title: springboot 블로그 2.의존성 설정
 date: 2021-09-15 22:40:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

@@ -2,7 +2,6 @@
 title: springboot 2.JPA 란?
 date: 2021-09-12 18:00:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

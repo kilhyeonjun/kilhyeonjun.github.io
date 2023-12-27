@@ -2,7 +2,6 @@
 title: springboot 1.스프링 이란?
 date: 2021-09-11 11:00:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

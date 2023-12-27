@@ -2,7 +2,6 @@
 title: hadoop 환경 설치 (2)
 date: 2021-09-29 10:40:00
 category: hadoop
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

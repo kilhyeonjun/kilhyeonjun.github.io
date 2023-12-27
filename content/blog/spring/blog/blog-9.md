@@ -2,7 +2,6 @@
 title: springboot 블로그 9.Json 데이터로 통신하기
 date: 2021-09-27 08:45:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

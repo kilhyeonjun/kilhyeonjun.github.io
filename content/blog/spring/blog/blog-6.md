@@ -2,7 +2,6 @@
 title: springboot 블로그 6.yaml 설정
 date: 2021-09-17 01:45:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

@@ -2,7 +2,6 @@
 title: springboot 블로그 10.화면구현
 date: 2021-10-02 16:51:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

@@ -2,7 +2,6 @@
 title: springboot security 2. 스프링부트 시큐리티 시큐리티 설정
 date: 2021-11-07 16:51:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

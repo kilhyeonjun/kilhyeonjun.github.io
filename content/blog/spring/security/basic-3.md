@@ -2,7 +2,6 @@
 title: springboot security 3. 스프링부트 시큐리티 시큐리티 회원가입
 date: 2021-11-07 17:51:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

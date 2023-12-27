@@ -2,7 +2,6 @@
 title: Go 기본 명령어 (1)
 date: 2021-09-12 13:10:00
 category: go
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

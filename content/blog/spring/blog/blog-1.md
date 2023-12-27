@@ -2,7 +2,6 @@
 title: springboot 블로그 1.환경 세팅
 date: 2021-09-15 22:00:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

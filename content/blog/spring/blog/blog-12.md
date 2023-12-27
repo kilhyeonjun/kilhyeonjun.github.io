@@ -2,7 +2,6 @@
 title: springboot 블로그 12.시큐리티 동작 원리
 date: 2021-11-07 16:51:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

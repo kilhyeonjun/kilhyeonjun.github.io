@@ -2,7 +2,6 @@
 title: springboot 블로그 11.시큐리티 코드 짜기
 date: 2021-10-16 16:51:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 

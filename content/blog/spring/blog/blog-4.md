@@ -2,7 +2,6 @@
 title: springboot 블로그 4.Git 세팅
 date: 2021-09-15 23:15:00
 category: spring
-thumbnail: { thumbnailSrc }
 draft: false
 ---
 
