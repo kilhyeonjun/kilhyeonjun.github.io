@@ -1,34 +1,15 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
-import { getCollection } from 'astro:content';
+import { getPublishedPosts, formatDate } from '../../lib/utils';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
-async function fetchFont(url: string): Promise<ArrayBuffer> {
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch font from ${url}: ${res.status}`);
-  }
-  return res.arrayBuffer();
-}
-
-let fontData: ArrayBuffer;
-let fontRegularData: ArrayBuffer;
-
-try {
-  [fontData, fontRegularData] = await Promise.all([
-    fetchFont('https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/korean-700-normal.woff'),
-    fetchFont('https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/korean-400-normal.woff'),
-  ]);
-} catch {
-  // Fallback: use empty ArrayBuffers so the build doesn't fail when CDN is down.
-  // OG images will render with the default satori font instead of Noto Sans KR.
-  console.warn('⚠️ Failed to fetch Korean fonts for OG images. Using fallback.');
-  fontData = new ArrayBuffer(0);
-  fontRegularData = new ArrayBuffer(0);
-}
+const fontData = fs.readFileSync(path.resolve('src/assets/fonts/noto-sans-kr-700-normal.woff'));
+const fontRegularData = fs.readFileSync(path.resolve('src/assets/fonts/noto-sans-kr-400-normal.woff'));
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  const posts = await getPublishedPosts();
   return posts.map((post) => ({
     params: { slug: post.id },
     props: { post },
@@ -39,11 +20,7 @@ export const GET: APIRoute = async ({ props }) => {
   const { post } = props;
   const { title, category, publishDate } = post.data;
 
-  const formattedDate = publishDate.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const formattedDate = formatDate(publishDate);
 
   const svg = await satori(
     {
@@ -150,22 +127,20 @@ export const GET: APIRoute = async ({ props }) => {
     {
       width: 1200,
       height: 630,
-      fonts: fontData.byteLength > 0
-        ? [
-            {
-              name: 'Noto Sans KR',
-              data: fontRegularData,
-              weight: 400 as const,
-              style: 'normal' as const,
-            },
-            {
-              name: 'Noto Sans KR',
-              data: fontData,
-              weight: 700 as const,
-              style: 'normal' as const,
-            },
-          ]
-        : [],
+      fonts: [
+        {
+          name: 'Noto Sans KR',
+          data: fontRegularData,
+          weight: 400 as const,
+          style: 'normal' as const,
+        },
+        {
+          name: 'Noto Sans KR',
+          data: fontData,
+          weight: 700 as const,
+          style: 'normal' as const,
+        },
+      ],
     }
   );
 

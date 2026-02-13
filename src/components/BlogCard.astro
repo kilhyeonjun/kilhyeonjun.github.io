@@ -1,4 +1,6 @@
 ---
+import { formatDate } from '../lib/utils';
+
 interface Props {
   title: string;
   description: string;
@@ -9,12 +11,7 @@ interface Props {
 }
 
 const { title, description, publishDate, category, tags, slug } = Astro.props;
-
-const formattedDate = publishDate.toLocaleDateString('ko-KR', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+const formattedDate = formatDate(publishDate);
 ---
 
 <article class="group">

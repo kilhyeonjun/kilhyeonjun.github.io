@@ -9,7 +9,7 @@ source: "tistory"
 originalUrl: "https://penguin-dev.tistory.com/6"
 ---
 
-![](/images/tistory/6/img.png)
+![](/images/tistory/6/img.webp)
 
 # GitHub Repository들 하나로 합치기 (subtree)
 
@@ -23,11 +23,11 @@ originalUrl: "https://penguin-dev.tistory.com/6"
 
 ## 2\. 새 Repository 생성
 
-![](/images/tistory/6/img_1.png)
+![](/images/tistory/6/img_1.webp)
 
 GitHub에서 새로운 빈 Repository를 생성한다.
 
-![](/images/tistory/6/img_2.png)
+![](/images/tistory/6/img_2.webp)
 
 이 Repository가 모든 프로젝트를 통합할 대상이 된다.
 
@@ -53,7 +53,7 @@ git remote add origin <Repository url>
 git push -u origin master
 ```
 
-![](/images/tistory/6/img_3.png)
+![](/images/tistory/6/img_3.webp)
 
 ## 4\. Repository 합치기
 
@@ -61,11 +61,11 @@ git push -u origin master
 git subtree add --prefix=<기존레포지토리명> <기존레포지토리주소> <기존메인브랜치명>
 ```
 
-![](/images/tistory/6/img_4.png)
+![](/images/tistory/6/img_4.webp)
 
 성공적으로 subtree가 추가되었다.
 
-![](/images/tistory/6/img_5.png)
+![](/images/tistory/6/img_5.webp)
 
 git tree를 봤을 때 해당 레포가 추가된걸 볼 수 있다.
 
@@ -81,4 +81,4 @@ git push origin HEAD:main
 
 이제 불필요해진 기존 repository를 삭제하면 된다.
 
-![](/images/tistory/6/img_6.png)
+![](/images/tistory/6/img_6.webp)

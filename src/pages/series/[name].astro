@@ -1,9 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+import { getPublishedPosts, formatDate } from '../../lib/utils';
 
 export async function getStaticPaths() {
-  const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+  const allPosts = await getPublishedPosts();
 
   const seriesNames = new Set<string>();
   allPosts.forEach((post) => {
@@ -50,7 +50,7 @@ const { name, posts } = Astro.props;
                 {post.data.title}
               </span>
               <span class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {post.data.publishDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                {formatDate(post.data.publishDate)}
               </span>
             </div>
           </a>

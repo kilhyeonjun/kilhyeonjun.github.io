@@ -1,11 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BlogCard from '../../components/BlogCard.astro';
-import { getCollection } from 'astro:content';
-import { sortPostsByDate } from '../../lib/utils';
+import { getPublishedPosts, sortPostsByDate } from '../../lib/utils';
 
 export async function getStaticPaths() {
-  const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+  const allPosts = await getPublishedPosts();
   const allCategories = new Set<string>();
   allPosts.forEach((post) => allCategories.add(post.data.category));
 

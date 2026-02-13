@@ -1,14 +1,26 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BlogCard from '../components/BlogCard.astro';
-import { getCollection } from 'astro:content';
-import { sortPostsByDate } from '../lib/utils';
+import { getPublishedPosts, sortPostsByDate } from '../lib/utils';
 
-const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const allPosts = await getPublishedPosts();
 const recentPosts = sortPostsByDate(allPosts).slice(0, 5);
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'kil-penguin blog',
+  url: 'https://kilhyeonjun.github.io',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: 'https://kilhyeonjun.github.io/blog/?q={search_term_string}',
+    'query-input': 'required name=search_term_string',
+  },
+};
 ---
 
 <BaseLayout title="kil-penguin blog" description="Backend Developer 기술 블로그">
+  <script type="application/ld+json" set:html={JSON.stringify(websiteJsonLd)} />
   <section class="py-8 text-center">
     <h1 class="mb-3 text-4xl font-bold text-gray-900 dark:text-gray-100">
       kil-penguin blog

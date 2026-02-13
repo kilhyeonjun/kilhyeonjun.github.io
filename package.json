@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "optimize-images": "tsx scripts/optimize-images.ts",
     "build": "astro build && npx pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
@@ -14,6 +15,8 @@
     "@astrojs/mdx": "^4.3.0",
     "@astrojs/rss": "^4.0.0",
     "@astrojs/sitemap": "^3.3.0",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
     "@pagefind/default-ui": "^1.4.0",
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/typography": "^0.5.19",
@@ -25,6 +28,7 @@
   "devDependencies": {
     "@types/turndown": "^5.0.6",
     "gray-matter": "^4.0.3",
+    "sharp": "^0.34.5",
     "tsx": "^4.19.4",
     "turndown": "^7.2.2"
   }

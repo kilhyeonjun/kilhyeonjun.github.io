@@ -28,7 +28,7 @@
 </dialog>
 
 <script>
-  function initSearch() {
+  document.addEventListener('astro:page-load', () => {
     const trigger = document.getElementById('search-trigger');
     const dialog = document.getElementById('search-dialog') as HTMLDialogElement;
     const backdrop = document.getElementById('search-dialog-backdrop');
@@ -39,7 +39,6 @@
       dialog?.showModal();
       if (!searchLoaded) {
         searchLoaded = true;
-        // @ts-ignore
         const { PagefindUI } = await import('@pagefind/default-ui');
         new PagefindUI({
           element: '#pagefind-search',
@@ -65,7 +64,7 @@
       }
     });
 
-    document.addEventListener('keydown', (e) => {
+    function handleKeydown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         if (dialog?.open) {
@@ -74,10 +73,15 @@
           openSearch();
         }
       }
-    });
-  }
+    }
 
-  initSearch();
+    document.addEventListener('keydown', handleKeydown);
+
+    // Cleanup on page transition
+    document.addEventListener('astro:before-swap', () => {
+      document.removeEventListener('keydown', handleKeydown);
+    }, { once: true });
+  });
 </script>
 
 <style is:global>

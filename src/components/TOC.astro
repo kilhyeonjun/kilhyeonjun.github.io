@@ -70,7 +70,7 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
 )}
 
 <script>
-  function initScrollSpy() {
+  document.addEventListener('astro:page-load', () => {
     const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.toc-link');
     if (tocLinks.length === 0) return;
 
@@ -130,7 +130,5 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
     }, { once: true });
 
     updateActiveLink();
-  }
-
-  initScrollSpy();
+  });
 </script>

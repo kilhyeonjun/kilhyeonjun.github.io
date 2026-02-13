@@ -1,8 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
+import { getPublishedPosts, formatDate } from '../../lib/utils';
 
-const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const allPosts = await getPublishedPosts();
 
 const seriesMap = new Map<string, { count: number; latestDate: Date }>();
 allPosts.forEach((post) => {
@@ -40,7 +40,7 @@ const sortedSeries = [...seriesMap.entries()]
           <span class="mb-2 font-semibold text-gray-900 dark:text-gray-100">{name}</span>
           <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
             <span>{info.count}편</span>
-            <span>마지막 업데이트: {info.latestDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+            <span>마지막 업데이트: {formatDate(info.latestDate)}</span>
           </div>
         </a>
       ))}

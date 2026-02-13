@@ -1,12 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BlogCard from '../../components/BlogCard.astro';
-import { getCollection } from 'astro:content';
+import { getPublishedPosts } from '../../lib/utils';
 import type { GetStaticPaths } from 'astro';
 
 export const getStaticPaths = (async ({ paginate }) => {
-  const allPosts = await getCollection('blog', ({ data }) => !data.draft);
-  const sortedPosts = allPosts.sort(
+  const allPosts = await getPublishedPosts();
+  const sortedPosts = [...allPosts].sort(
     (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
   );
 

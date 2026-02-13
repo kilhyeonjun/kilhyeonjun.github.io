@@ -1,5 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import { formatDate } from '../lib/utils';
 
 interface Props {
   title: string;
@@ -43,17 +44,8 @@ const jsonLd = {
   wordCount: readingTime * 500,
 };
 
-const formattedDate = publishDate.toLocaleDateString('ko-KR', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
-
-const formattedUpdatedDate = updatedDate?.toLocaleDateString('ko-KR', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+const formattedDate = formatDate(publishDate);
+const formattedUpdatedDate = updatedDate ? formatDate(updatedDate) : undefined;
 ---
 
 <BaseLayout title={`${title} | kil-penguin blog`} description={description} ogImage={ogImage}>
@@ -108,9 +100,13 @@ const formattedUpdatedDate = updatedDate?.toLocaleDateString('ko-KR', {
       button.className = 'absolute right-2 top-2 rounded bg-gray-700/50 px-2 py-1 text-xs text-gray-300 opacity-0 transition-opacity hover:bg-gray-600/50 group-hover:opacity-100';
       button.textContent = 'Copy';
       button.addEventListener('click', async () => {
-        const code = block.querySelector('code')?.textContent ?? '';
-        await navigator.clipboard.writeText(code);
-        button.textContent = 'Copied!';
+        try {
+          const code = block.querySelector('code')?.textContent ?? '';
+          await navigator.clipboard.writeText(code);
+          button.textContent = 'Copied!';
+        } catch {
+          button.textContent = 'Failed';
+        }
         setTimeout(() => { button.textContent = 'Copy'; }, 2000);
       });
       wrapper.appendChild(button);

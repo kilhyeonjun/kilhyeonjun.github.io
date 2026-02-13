@@ -1,5 +1,12 @@
 ---
 import '../styles/global.css';
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
+import { ClientRouter } from 'astro:transitions';
 import ThemeToggle from '../components/ThemeToggle.astro';
 import SearchDialog from '../components/SearchDialog.astro';
 
@@ -12,7 +19,8 @@ interface Props {
 
 const { title, description = 'Backend Developer 기술 블로그', lang = 'ko', ogImage } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const ogImageURL = ogImage ? new URL(ogImage, Astro.site).href : undefined;
+const defaultOgImage = '/favicon.svg';
+const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
 ---
 
 <!doctype html>
@@ -22,29 +30,22 @@ const ogImageURL = ogImage ? new URL(ogImage, Astro.site).href : undefined;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://giscus.app; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; frame-src https://giscus.app; connect-src 'self';" />
     <link rel="canonical" href={canonicalURL} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate" type="application/rss+xml" title="kil-penguin blog RSS" href="/rss.xml" />
 
-    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    {ogImageURL && <meta property="og:image" content={ogImageURL} />}
+    <meta property="og:image" content={ogImageURL} />
 
-    <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    {ogImageURL && <meta name="twitter:image" content={ogImageURL} />}
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
+    <meta name="twitter:image" content={ogImageURL} />
 
     <script is:inline>
       const theme = (() => {
@@ -62,8 +63,12 @@ const ogImageURL = ogImage ? new URL(ogImage, Astro.site).href : undefined;
     </script>
 
     <title>{title}</title>
+    <ClientRouter />
   </head>
   <body class="min-h-screen">
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary-600 focus:px-4 focus:py-2 focus:text-white">
+      본문으로 건너뛰기
+    </a>
     <header class="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80">
       <nav class="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
         <a href="/" class="text-xl font-bold text-primary-600 dark:text-primary-400">
@@ -91,7 +96,7 @@ const ogImageURL = ogImage ? new URL(ogImage, Astro.site).href : undefined;
       </nav>
     </header>
 
-    <main class="mx-auto max-w-4xl px-4 py-8">
+    <main id="main-content" class="mx-auto max-w-4xl px-4 py-8">
       <slot />
     </main>
 

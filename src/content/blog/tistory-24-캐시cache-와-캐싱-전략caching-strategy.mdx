@@ -51,7 +51,7 @@ e.g. Redis, Memcached
 
 ## 캐시로 Redis를 선택한 이유?
 
-![https://yoongrammer.tistory.com/101](/images/tistory/24/캐시 알아보기.png)
+![https://yoongrammer.tistory.com/101](/images/tistory/24/캐시 알아보기.webp)
 
 우선 로컬 캐시를 사용하지 않고 글로벌 캐시를 사용하는 이유는 현재 콘서트 예약 프로젝트는 **학습용 프로젝트**이다.
 대규모 트래픽 처리를 위한 서비스이므로 분산환경을 고려하여 **글로벌 캐시를 사용하는 것이 적합**하다.그러면 글로벌 캐시는 Redis와 Memcached 중 어떤 것을 선택해야 할까? 나는 **Redis**를 선택했다. 그 이유는 다음과 같다.
@@ -96,7 +96,7 @@ Cache Aside 패턴이라고도 불리며 데이터를 찾을 때 **우선 캐시
 
 #### Read Through
 
-![https://yoongrammer.tistory.com/101](/images/tistory/24/img.png)
+![https://yoongrammer.tistory.com/101](/images/tistory/24/img.webp)
 
 캐시에서만 데이터를 **읽어오는 전략**으로 캐시 미스가 발생하면 DB에서 누락된 데이터를 로드 후에 캐시에 저장하고 애플리케이션에 반환하는 전략이다.
 
@@ -109,7 +109,7 @@ Read Through 방식은 Cache Aside 방식과 비슷하지만, Cache Store에 저
 
 #### Write Back
 
-![https://yoongrammer.tistory.com/101](/images/tistory/24/img_1.png)
+![https://yoongrammer.tistory.com/101](/images/tistory/24/img_1.webp)
 
 Write Behind 패턴이라고도 불리며, **캐시와 DB 동기화를 비동기로 처리**하는 전략이다.
 데이터를 저장할 때 **DB에 바로 쿼리하지 않고 캐시에 모아** 일정 주기 배치 작업을 통해 DB에 반영한다.
@@ -121,7 +121,7 @@ Write Behind 패턴이라고도 불리며, **캐시와 DB 동기화를 비동기
 
 #### Write Through
 
-![https://yoongrammer.tistory.com/101](/images/tistory/24/img_2.png)
+![https://yoongrammer.tistory.com/101](/images/tistory/24/img_2.webp)
 
 캐시와 DB에 **동시에 데이터를 저장**하는 전략이다.
 데이터를 저장할 때 **먼저 캐시에 저장**하고, 캐시에 저장된 데이터를 바로 DB에 저장한다.
@@ -133,7 +133,7 @@ Write Behind 패턴이라고도 불리며, **캐시와 DB 동기화를 비동기
 
 #### Write Around
 
-![https://yoongrammer.tistory.com/101](/images/tistory/24/img_3.png)
+![https://yoongrammer.tistory.com/101](/images/tistory/24/img_3.webp)
 
 모든 데이터는 **DB에 저장하며 캐시는 갱신하지 않는** 전략이다.
 캐시 미스가 발생하는 경우에만 DB에서 데이터를 가져와 캐시에 저장한다.
@@ -266,7 +266,7 @@ org.springframework.data.redis.serializer.SerializationException: Could not writ
 
 ### 이미 포함된 의존성
 
-![](/images/tistory/24/img_4.png)
+![](/images/tistory/24/img_4.webp)
 
 `com.fasterxml.jackson.datatype:jackson-datatype-jsr310` 모듈은 `spring-boot-starter-web` 의존성에 포함되어 있다. 그러나 해당 모듈이 포함되어 있음에도 여전히 `LocalDateTime` 역직렬화 문제가 발생하는 경우가 있다. 그 원인이 무엇일까?
 
@@ -314,7 +314,7 @@ Java 8의 날짜/시간 타입이 기본적으로 Jackson에 등록되어 있지
 
 ## `ClassCastException` 해결하기
 
-![](/images/tistory/24/스크린샷 2024-11-07 오전 11.33.58.png)
+![](/images/tistory/24/스크린샷 2024-11-07 오전 11.33.58.webp)
 
 Redis에 정상적으로 데이터가 저장된 후 캐시에서 데이터를 꺼내려고 할 때, 아래와 같은 `ClassCastException`이 발생했다.
 
@@ -354,7 +354,7 @@ Redis에서 JSON 형태로 저장된 데이터를 가져올 때, 기본적으로
 
 참고로 Jackson 2.10 버전부터는 `activateDefaultTyping()`을 사용할 때 보안상 `TypeValidator`를 추가하는 것이 필수가 되었다. 우선 간단하게 설정하기 위해 `PolymorphicTypeValidator`를 사용해 설정을 완료했다.
 
-![](/images/tistory/24/img_5.png)
+![](/images/tistory/24/img_5.webp)
 
 이제 type과 같이 저장된걸 확인할 수 있으며 정상 작동한다.
 

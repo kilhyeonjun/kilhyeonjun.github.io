@@ -1,375 +1,366 @@
-# Blog Project Comprehensive Review
+# Code Review: kil-penguin blog (v2)
 
 > **Date**: 2026-02-13
-> **Project**: kilhyeonjun-blog (Astro 5 + Tailwind CSS v4 + MDX)
+> **Project**: kilhyeonjun-blog — Astro 5.x + Tailwind CSS v4 + MDX
 > **URL**: https://kilhyeonjun.github.io
-> **Total Score**: 64 / 80 (80%)
+> **Deployment**: GitHub Pages via Actions
+> **Scope**: 전체 소스코드 (src/, public/, .github/, config)
 
 ---
 
-## Score Summary
+## Executive Summary
 
-| # | Category | Score | Status |
-|---|----------|-------|--------|
-| 1 | Code Quality | 7 / 10 | Good |
-| 2 | Design / UX | 8 / 10 | Good |
-| 3 | SEO | 7 / 10 | Good |
-| 4 | Performance | 6 / 10 | Needs Work |
-| 5 | Feature Verification | 9 / 10 | Excellent |
-| 6 | Content Quality | 6 / 10 | Needs Work |
-| 7 | Deployment | 8 / 10 | Good |
-| 8 | Bugs / Issues | 5 / 10 | Needs Work |
+전반적으로 **잘 구조화된 Astro 5.x 블로그**입니다. Content Collection + Zod 스키마, 동적 OG 이미지 생성(satori), Pagefind 검색, Giscus 댓글, 시리즈/카테고리/태그 시스템 등 기술 블로그에 필요한 기능을 빠짐없이 갖추고 있습니다.
 
----
+가장 시급한 문제는 **62MB 이미지 미최적화**(P0)와 **View Transitions 미대응 스크립트 패턴**(P0)이며, 그 외 폰트 셀프호스팅, 코드 중복 제거, RSS 개선 등이 필요합니다.
 
-## 1. Code Quality (7/10)
+> **이전 리뷰(v1) 오류 정정**:
+> - ~~"No robots.txt"~~ → `public/robots.txt` 존재 (sitemap 참조 포함) ✅
+> - ~~"No JSON-LD structured data"~~ → `BlogPostLayout.astro`에 `BlogPosting` JSON-LD 완비 ✅
+> - ~~"No custom 404 page"~~ → `src/pages/404.astro` 존재 ✅
+> - ~~"No pagination on blog list"~~ → `[...page].astro`에 페이지네이션 구현됨 (15개/페이지) ✅
+> - ~~"No event listener cleanup"~~ → 3개 컴포넌트 모두 `astro:before-swap` cleanup 구현됨 ✅
+> - ~~"OG image build fails if CDN is down"~~ → try-catch + fallback 이미 구현됨 ✅
+> - ~~"No astro check in CI"~~ → `deploy.yml`에 `npx astro check` step 존재 ✅
+> - ~~"Unused slug prop in Comments"~~ → Comments 컴포넌트에 props 없음 (빈 frontmatter) ✅
 
-### Strengths
-- TypeScript strict mode enabled (`tsconfig.json` extends `astro/tsconfigs/strict`)
-- Clean component interfaces with `interface Props` on every component
-- Zod schema validation for content collections (`content.config.ts`)
-- Single responsibility principle generally followed - components are focused
-- Utility functions properly extracted (`src/lib/utils.ts`)
-
-### Issues
-
-#### Critical
-| Issue | File | Line | Detail |
-|-------|------|------|--------|
-| `@ts-ignore` suppressing type check | `SearchDialog.astro` | 42 | Pagefind import lacks type declarations |
-| Missing error handling on font fetch | `og/[...slug].png.ts` | 6-12 | Build fails if CDN is down; no try-catch |
-| Non-null assertion without validation | `TOC.astro` | 77 | `link.dataset.headingSlug!` could be undefined |
-| DOM manipulation without null check | `BlogPostLayout.astro` | 72-88 | `block.parentNode?.insertBefore()` chain |
-
-#### Warning
-| Issue | File | Detail |
-|-------|------|--------|
-| Theme logic duplicated | `BaseLayout.astro` (49-62) + `ThemeToggle.astro` (35-43) | Identical `getTheme()` in two places |
-| Post sorting duplicated 5x | `index.astro`, `blog/index.astro`, `[tag].astro`, `[category].astro`, `rss.xml.ts` | Same `.sort()` comparator everywhere |
-| Date formatting inline | `series/index.astro` (43), `series/[name].astro` (53), `BlogPostLayout.astro` (18-28) | `formatDate()` utility exists but not always used |
-| MutationObserver never disconnected | `Comments.astro` | 50-57 | Memory leak on page transitions |
-| Scroll listener never removed | `TOC.astro` | 115-123 | Memory leak on page transitions |
-| ThemeToggle listeners never cleaned up | `ThemeToggle.astro` | 60-71 | Event listener accumulation |
-| Unsafe type cast | `ThemeToggle.astro` | 37 | `localStorage.getItem('theme') as 'light' \| 'dark'` without validation |
-| Unused `slug` prop | `Comments.astro` | 2-6 | Prop accepted but never used in template |
-
-#### Recommendations
-1. Create `src/types/pagefind.d.ts` with proper type declarations for `@pagefind/default-ui`
-2. Extract `getTheme()` and `sortPostsByDate()` to `src/lib/utils.ts`
-3. Wrap font fetches in try-catch with fallback
-4. Add Astro lifecycle cleanup for all event listeners: `document.addEventListener('astro:before-swap', cleanup)`
+| 등급 | 건수 | 설명 |
+|------|------|------|
+| **P0 (심각)** | 2 | 즉시 수정 필요 — 심각한 성능 문제 |
+| **P1 (중요)** | 8 | 조기 수정 권장 — 성능/SEO/접근성에 유의미한 영향 |
+| **P2 (개선)** | 10 | 품질 향상 — 코드 정리, 베스트 프랙티스 적용 |
 
 ---
 
-## 2. Design / UX (8/10)
+## P0 — 심각 (Critical)
 
-### Strengths
-- Clean, modern design with Tailwind CSS v4 + Typography plugin
-- Dark mode fully implemented with system preference detection and manual toggle
-- Responsive navigation (Categories/Series hidden on mobile via `sm:block`)
-- Consistent color system using `primary-*` scale (blue-based)
-- Smooth transitions (`transition-colors duration-200`)
-- Focus-visible styles for accessibility (`global.css` lines 80-84)
-- Selection color styling for both light/dark modes
-- Sticky header with backdrop blur for modern feel
-- Code copy button on hover (progressive enhancement)
-- Scroll spy on TOC with active heading highlight
+### P0-1. 이미지 미최적화 — 62MB PNG 원본 그대로 서빙
 
-### Issues
+**위치**: `public/images/` (143개 이미지 파일)
 
-#### Warning
-| Issue | Detail |
-|-------|--------|
-| No pagination on blog list | 60+ posts render in a single page (`blog/index.astro`) |
-| TOC sidebar uses hardcoded positioning | `style="left: calc(50% + 24rem);"` may break on unusual viewports |
-| No loading states | Search dialog and comments have no loading indicators |
-| Empty div placeholders | `PostNavigation.astro` uses `<div />` when no prev/next post |
+`public/` 디렉토리의 이미지들이 **최적화 없이 원본 PNG로 서빙**됩니다.
 
-#### Minor
-| Issue | Detail |
-|-------|--------|
-| No skip-to-content link | Keyboard users must tab through full nav |
-| No 404 page | Missing custom `src/pages/404.astro` |
-| About page is redirect only | `about.astro` just redirects to `/resume/` via meta refresh |
+```
+5.0M  tistory/1/e68e896a-bd59-40eb-ae1e-45b68e6396db.png
+3.4M  tistory/40/Gemini_Generated_Image_ypi3lcypi3lcypi3.png
+2.4M  tistory/36/img.png
+2.1M  tistory/39/Gemini_Generated_Image_uctcqbuctcqbuctc.png
+2.1M  tistory/34/img.png
+1.8M  tistory/2/img_3.png
+```
 
-#### Recommendations
-1. Add pagination (10-15 posts per page) to `blog/index.astro`
-2. Add `<a href="#main-content" class="sr-only focus:not-sr-only">Skip to content</a>` before header
-3. Create a custom 404 page
-4. Replace meta refresh redirect with Astro redirect config
+**영향**:
+- 총 **62MB** 이미지가 최적화/리사이즈 없이 배포
+- 5MB PNG → WebP 변환 시 ~200KB 수준으로 감축 가능
+- Lighthouse Performance 점수에 직접 악영향 (LCP 지연)
+- 모바일 사용자에게 과도한 데이터 소비
+
+**권장 수정**:
+1. `public/images/` → `src/assets/images/`로 이동 후 Astro `<Image />` 컴포넌트 사용 (자동 WebP 변환 + 리사이즈 + lazy loading)
+2. MDX 내 `![](/images/...)` → `<Image />` 컴포넌트로 마이그레이션
+3. 또는 빌드 스크립트에서 `sharp`로 일괄 WebP 변환
 
 ---
 
-## 3. SEO (7/10)
+### P0-2. 클라이언트 스크립트 — View Transitions 비호환 패턴
 
-### Strengths
-- Canonical URL properly constructed on every page (`BaseLayout.astro` line 14-15, 25)
-- Open Graph meta tags comprehensive: `og:type`, `og:url`, `og:title`, `og:description`, `og:image`
-- Twitter Card meta tags: `summary_large_image` with title, description, image
-- Dynamic OG image generation with satori (1200x630, Korean font support)
-- Sitemap auto-generated via `@astrojs/sitemap` integration
-- RSS feed at `/rss.xml` with Korean language tag
-- RSS link in `<head>` for auto-discovery
-- Site URL correctly configured: `https://kilhyeonjun.github.io`
+**위치**: `ThemeToggle.astro`, `SearchDialog.astro`, `TOC.astro`
 
-### Missing
-| Issue | Impact | Priority |
-|-------|--------|----------|
-| No `robots.txt` | Search engines use defaults; no sitemap reference | High |
-| No JSON-LD structured data | No rich snippets in search results (BlogPosting, BreadcrumbList) | High |
-| No `twitter:site` / `twitter:creator` | Twitter cards lack author attribution | Medium |
-| No `author` meta tag | Author not identified to search engines | Low |
-| og:image missing for non-blog pages | Homepage, tags, categories, series pages have no OG image | Medium |
-| No `og:locale` meta tag | Language not signaled to social platforms | Low |
+3개 컴포넌트의 스크립트가 모듈 최상위에서 DOM을 직접 조회합니다:
 
-### Recommendations
-1. Create `/public/robots.txt`:
-   ```
-   User-agent: *
-   Allow: /
-   Sitemap: https://kilhyeonjun.github.io/sitemap-index.xml
-   ```
-2. Add JSON-LD schema to `BlogPostLayout.astro`:
-   ```html
-   <script type="application/ld+json">
-   { "@context": "https://schema.org", "@type": "BlogPosting", ... }
-   </script>
-   ```
-3. Add default OG image for non-blog pages
-4. Add `<meta name="author" content="kilhyeonjun" />`
+```typescript
+// ThemeToggle.astro (line 31-33)
+const themeToggleBtn = document.getElementById('theme-toggle');
+const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+
+// SearchDialog.astro (line 31)
+function initSearch() {
+  const trigger = document.getElementById('search-trigger');
+}
+initSearch();
+
+// TOC.astro (line 73)
+function initScrollSpy() { ... }
+initScrollSpy();
+```
+
+**문제점**:
+- `astro:before-swap` cleanup은 있으나, **`astro:page-load`에서 재초기화 코드가 없음**
+- View Transitions 활성화 시 페이지 전환 후 DOM 교체로 모든 참조가 `null`이 됨
+- 현재 View Transitions 미사용이라 문제가 숨어 있지만, 활성화 즉시 **테마 토글/검색/TOC 모두 동작 중단**
+
+**권장 수정**:
+```typescript
+document.addEventListener('astro:page-load', () => {
+  // DOM 조회 + 이벤트 리스너 등록을 여기서 수행
+});
+```
 
 ---
 
-## 4. Performance (6/10)
+## P1 — 중요 (Important)
 
-### Strengths
-- Static site generation (SSG) - optimal for GitHub Pages
-- Dynamic import for Pagefind UI (loads only when search opened)
-- Giscus comments loaded with `async` + `data-loading="lazy"`
-- Preconnect hints for Google Fonts and gstatic
-- `display=swap` on Google Fonts (prevents invisible text)
-- Tailwind CSS v4 with Vite plugin (efficient tree-shaking)
-- Shiki dual-theme syntax highlighting (no extra JS bundle)
-- OG images cached with `max-age=31536000, immutable`
+### P1-1. Google Fonts 렌더 블로킹
 
-### Issues
+**위치**: `src/layouts/BaseLayout.astro` (line 42-47)
 
-#### Critical
-| Issue | Detail | Impact |
-|-------|--------|--------|
-| No image optimization | Zero usage of Astro's `<Image>` component; all images are raw `<img>` via markdown | No WebP conversion, no responsive srcset, no lazy loading |
-| 62MB of unoptimized images in `/public/images/` | PNG/JPG files served as-is | Slow page loads on image-heavy posts |
-| No lazy loading on content images | MDX images load eagerly | Bad LCP/CLS on image-heavy posts |
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+```
 
-#### Warning
-| Issue | Detail |
-|-------|--------|
-| Google Fonts loaded render-blocking | `<link rel="stylesheet" href="...fonts.googleapis.com...">` blocks render |
-| No font preload | Only `preconnect`, no `preload` for critical fonts |
-| No `dns-prefetch` for giscus.app | Giscus script requires DNS lookup on every blog post |
-| OG font fetched from CDN at build time | `og/[...slug].png.ts` fetches fonts from jsdelivr; no local fallback |
-| No blog list pagination | 60+ posts rendered in single DOM on `/blog/` |
+**영향**:
+- 외부 CSS `<link>`는 **렌더 블로킹 리소스** — FCP/LCP 지연
+- 2개 외부 도메인 연결 필요 (DNS + TLS 핸드셰이크 x2)
+- `display=swap`은 FOUT만 허용, CSS 로드 자체는 여전히 블로킹
 
-#### Minor
-| Issue | Detail |
-|-------|--------|
-| No service worker | No offline support |
-| No resource hints for internal navigation | No `<link rel="prefetch">` for likely next pages |
-
-### Recommendations
-1. **High priority**: Convert images to WebP and add responsive sizes
-   - Use Astro's `<Image>` component or build-time optimization
-   - Add `loading="lazy"` to below-fold images
-2. **Medium**: Self-host Inter and JetBrains Mono fonts (remove Google Fonts dependency)
-3. **Medium**: Add `<link rel="dns-prefetch" href="https://giscus.app" />`
-4. **Low**: Consider Astro prefetch integration for internal links
+**권장 수정**:
+1. `@fontsource/inter` + `@fontsource/jetbrains-mono`로 셀프호스팅 (외부 의존성 제거)
+2. 또는 `<link rel="preload" as="style">` + JS 비동기 로드 패턴
 
 ---
 
-## 5. Feature Verification (9/10)
+### P1-2. `about.astro` — `<meta http-equiv="refresh">` 리다이렉트
 
-### Search (Pagefind) - Working
-- Build script runs `npx pagefind --site dist` after Astro build
-- Lazy-loaded via dynamic import when dialog opens
-- Keyboard shortcut `Cmd/Ctrl+K` to toggle
-- Dark mode styling via CSS custom properties
-- Backdrop click to close
-- ESC key to close (native dialog behavior)
+**위치**: `src/pages/about.astro`
 
-### Comments (Giscus) - Working
-- Configured with GitHub Discussions (repo: `kilhyeonjun/kilhyeonjun.github.io`)
-- Dark mode synced via MutationObserver watching `<html>` class changes
-- Korean language (`data-lang="ko"`)
-- Lazy loading enabled
-- Reactions enabled
+```html
+<meta http-equiv="refresh" content="0;url=/resume/" />
+```
 
-### TOC (Table of Contents) - Working
-- Mobile: collapsible `<details>` element
-- Desktop: fixed sidebar at xl breakpoint with scroll spy
-- Filters headings to depth 2-3
-- Active heading highlighted with border and color change
-- Scroll spy uses `requestAnimationFrame` for performance
+**문제점**:
+- SEO 비우호적 — 301 리다이렉트보다 약한 시그널
+- 접근성 가이드라인 위반 — 사용자 동의 없는 자동 리다이렉트
+- BaseLayout 미사용 → `<html lang>`, 다크모드, 공통 스타일 모두 없음
 
-### Series / Categories / Tags - Working
-- Series: ordered list with numbered badges, sorted by order field
-- Categories: grid layout with post counts, supports encoded URLs
-- Tags: tag cloud with counts, sorted by frequency
-- All pages properly filter draft posts
-
-### RSS - Working
-- `/rss.xml` with title, description, language (ko)
-- Sorted by publish date, links to blog posts
-- Auto-discovery link in `<head>`
-
-### Post Navigation - Working
-- Previous/next post links on every blog post
-- Chronologically ordered
-
-### OG Image Generation - Working
-- Dynamic PNG generation with satori + resvg
-- Korean font support (Noto Sans KR 400/700)
-- Responsive font size (40px for long titles, 48px for short)
-- Category badge and date shown
-
-### Issue
-| Issue | Detail |
-|-------|--------|
-| Mermaid diagrams not rendered | Posts contain mermaid syntax in plain code blocks (no `\`\`\`mermaid` fence), displayed as raw text |
-
-> Found in: `tistory-41` (6 diagrams), `tistory-40` (7 diagrams), `tistory-33` (3 diagrams), `tistory-34` (2 diagrams)
-> Total: ~18 mermaid diagrams rendering as plain text
-
-### Recommendation
-- Install `rehype-mermaid` or `remark-mermaid` plugin to render diagrams
-- Or convert mermaid blocks to use proper ` ```mermaid ` fences and add client-side mermaid.js
+**권장 수정**:
+```javascript
+// astro.config.mjs
+export default defineConfig({
+  redirects: { '/about': '/resume/' },
+});
+```
 
 ---
 
-## 6. Content Quality (6/10)
+### P1-3. `formatDate` 함수 5곳 중복
 
-### Overview
-- **Total posts**: ~60+ MDX files
-- **Sources**: Tistory migration (~41), Gatsby migration (~20+), Original
-- **Schema**: Well-defined with Zod validation
+**위치**: `src/lib/utils.ts`, `BlogPostLayout.astro`, `BlogCard.astro`, `series/index.astro`, `series/[name].astro`
 
-### Strengths
-- Frontmatter schema validation catches missing fields at build time
-- Tistory posts (recent) have excellent quality: complete frontmatter, structured content, proper headings
-- `source` and `originalUrl` fields preserve migration provenance
-- Series metadata properly structured with name + order
+```typescript
+// utils.ts에 이미 존재하는 함수
+export function formatDate(date: Date): string {
+  return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+}
 
-### Issues
+// 동일 로직이 4곳에서 인라인으로 반복됨
+```
 
-#### Critical
-| Issue | Files Affected | Detail |
-|-------|---------------|--------|
-| Mermaid diagrams as raw text | 4 posts, ~18 diagrams | Fenced as plain code blocks, not rendered as diagrams |
-| Markdown table rendering broken | `tistory-41`, `tistory-40` | Tables use raw text format instead of proper markdown tables |
-| Minimal/stub posts | `python-2021-09-08-python-base.mdx` (19 lines) | Essentially empty; should be marked as draft |
-
-#### Warning
-| Issue | Count | Detail |
-|-------|-------|--------|
-| Generic image alt text (`![img]`) | 53 occurrences in 15 files | All legacy/Gatsby posts use `![img]` instead of descriptive alt text |
-| Code blocks with tilde fences (`~~~`) | Multiple Gatsby-era posts | Should be backtick fences for consistency |
-| Code blocks with wrong language | `go-*.mdx` files | Go code labeled as `~~~javascript` |
-| Emoji rendering issues | `tistory-33`, `tistory-41` | Emoji characters (`?`, `?`, `?`) not rendering (show as `?`) |
-
-#### Verified Working
-| Check | Status |
-|-------|--------|
-| Image paths exist | All `/images/legacy/*` and `/images/tistory/*` referenced images verified |
-| Frontmatter completeness | All required fields present across sampled posts |
-| No HTML entity artifacts | No `&amp;`, `&lt;`, `&gt;` found |
-| No orphaned HTML tags | No raw `<div>`, `<p>` remnants from migration |
-| Date format consistency | All dates use YYYY-MM-DD format |
-| Heading hierarchy | Generally correct H1 > H2 > H3 |
-
-### Recommendations
-1. Fix mermaid diagrams (install plugin or convert to images)
-2. Batch-replace `![img]` with descriptive alt text across 15 files
-3. Mark `python-2021-09-08-python-base.mdx` as `draft: true`
-4. Fix Go code blocks labeled as `javascript`
-5. Convert tilde fences (`~~~`) to backtick fences (` ``` `)
+**권장**: `formatDate()`를 import하여 사용. 5곳의 중복을 1곳으로 통합.
 
 ---
 
-## 7. Deployment (8/10)
+### P1-4. `Array.sort()` in-place mutation 패턴
 
-### Strengths
-- GitHub Actions CI/CD pipeline (`deploy.yml`) - clean and well-structured
-- Two-job pipeline: `build` -> `deploy` with proper dependency
-- `npm ci` for reproducible builds
-- Node.js 20 with npm caching
-- `actions/configure-pages@v5` for GitHub Pages integration
-- `concurrency` group prevents parallel deploys with `cancel-in-progress: false` (safe)
-- `workflow_dispatch` for manual deploys
-- Proper permissions scoped (`contents: read`, `pages: write`, `id-token: write`)
-- Pagefind indexing included in build script
+**위치**: `[...slug].astro`, `[...page].astro`, `categories/[category].astro`, `tags/[tag].astro`
 
-### Issues
-| Issue | Priority | Detail |
-|-------|----------|--------|
-| No type checking in CI | Medium | No `astro check` or `tsc` step before build |
-| No linting in CI | Low | No ESLint or similar quality gate |
-| No build size monitoring | Low | No size regression detection |
-| No preview environment | Low | No staging/preview deployments for PRs |
-| No security headers | Low | Missing CSP, HSTS, X-Frame-Options (GitHub Pages limitation) |
+```typescript
+const sortedPosts = posts.sort(
+  (a, b) => a.data.publishDate.valueOf() - b.data.publishDate.valueOf()
+);
+```
 
-### Recommendations
-1. Add `astro check` step before build in `deploy.yml`
-2. Consider adding Lighthouse CI for performance regression checks
-3. Add build artifact size reporting
+**문제점**: `.sort()`는 원본 배열을 **in-place 변경**. SSG에서는 각 페이지가 독립적이라 치명적이진 않지만 위험한 패턴.
+
+**권장**: `[...posts].sort(...)` 또는 `.toSorted(...)` 사용. `utils.ts`에 `sortPostsByDateAsc()` 추가.
 
 ---
 
-## 8. Bugs / Issues (5/10)
+### P1-5. RSS에 content 필드 미포함
 
-### Active Bugs
+**위치**: `src/pages/rss.xml.ts`
 
-| # | Severity | Description | Location |
-|---|----------|-------------|----------|
-| 1 | **Critical** | 18 mermaid diagrams display as raw text | `tistory-33`, `tistory-34`, `tistory-40`, `tistory-41` |
-| 2 | **Critical** | OG image build fails if jsdelivr CDN is down (no error handling) | `og/[...slug].png.ts:6-12` |
-| 3 | **High** | Emoji characters rendering as `?` in multiple tistory posts | `tistory-33`, `tistory-41` |
-| 4 | **High** | No `robots.txt` - search engines lack crawl directives | Missing file |
-| 5 | **Medium** | Memory leaks from uncleared event listeners/observers | `Comments.astro`, `TOC.astro`, `ThemeToggle.astro` |
-| 6 | **Medium** | 60+ posts on single page with no pagination | `blog/index.astro` |
-| 7 | **Medium** | Go code blocks labeled as `javascript` | `go-*.mdx` files |
-| 8 | **Medium** | `about.astro` uses meta refresh redirect instead of proper redirect | `about.astro` |
-| 9 | **Low** | `@ts-ignore` in SearchDialog for Pagefind import | `SearchDialog.astro:42` |
-| 10 | **Low** | 53 images with generic `![img]` alt text | 15 legacy MDX files |
-| 11 | **Low** | No custom 404 page | Missing `src/pages/404.astro` |
-| 12 | **Low** | Unused `slug` prop in Comments component | `Comments.astro:2-6` |
+RSS 항목에 본문 content가 없어 RSS 리더에서 요약만 표시.
+
+**권장**: `@astrojs/rss`의 `content` 옵션으로 렌더된 HTML 제공.
 
 ---
 
-## Priority Action Plan
+### P1-6. OG 이미지 — 빌드 시 외부 CDN 의존 + `@latest` 버전
 
-### Immediate (P0) - This Week
-1. Create `/public/robots.txt` with sitemap reference
-2. Add try-catch to font fetches in `og/[...slug].png.ts`
-3. Install mermaid plugin or convert diagrams to images
-4. Fix emoji encoding issues in tistory posts
+**위치**: `src/pages/og/[...slug].png.ts` (line 18-21)
 
-### Short-term (P1) - This Month
-5. Add JSON-LD structured data to `BlogPostLayout.astro`
-6. Add event listener cleanup to `Comments`, `TOC`, `ThemeToggle`
-7. Add pagination to blog list page
-8. Create custom 404 page
-9. Fix Go code block language labels
-10. Add `astro check` to CI pipeline
+```typescript
+fetchFont('https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/korean-700-normal.woff'),
+```
 
-### Medium-term (P2) - Next Sprint
-11. Image optimization pipeline (WebP conversion, responsive images)
-12. Self-host fonts (remove Google Fonts dependency)
-13. Extract duplicated code (theme logic, sort functions, date formatting)
-14. Batch-fix generic image alt text in legacy posts
-15. Add Pagefind type declarations
+**문제점**:
+- try-catch fallback은 있으나 OG 이미지 품질이 저하됨
+- `@latest` 태그 → 재현 불가능한 빌드
 
-### Long-term (P3) - Backlog
-16. Add Lighthouse CI to deployment pipeline
-17. Mark stub posts as draft or expand content
-18. Add skip-to-content link
-19. Replace meta refresh redirect with Astro config redirect
-20. Consider adding service worker for offline support
+**권장**: 폰트 파일을 로컬에 포함 후 `fs.readFileSync`로 로드.
+
+---
+
+### P1-7. CSP(Content Security Policy) 헤더 미설정
+
+**위치**: 전역
+
+현재 CSP가 없어 XSS 공격 시 외부 스크립트 주입 방어 불가.
+
+**권장**:
+```html
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'self';
+  script-src 'self' 'unsafe-inline' https://giscus.app;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src https://fonts.gstatic.com;
+  frame-src https://giscus.app;" />
+```
+
+---
+
+### P1-8. Skip-to-content 링크 미구현
+
+**위치**: `src/layouts/BaseLayout.astro`
+
+키보드 사용자가 네비게이션의 모든 링크를 탭해야 본문에 도달. WCAG 2.4.1 위반.
+
+**권장**: `<a href="#main-content" class="sr-only focus:not-sr-only ...">본문으로 건너뛰기</a>` 추가.
+
+---
+
+## P2 — 개선 (Enhancement)
+
+### P2-1. View Transitions 미사용
+
+Astro 5.x의 `<ViewTransitions />` 미사용. 페이지 전환 시 풀 리로드.
+
+**권장**: P0-2 해결 후 도입.
+
+---
+
+### P2-2. Pagefind `@ts-ignore` 사용
+
+**위치**: `src/components/SearchDialog.astro` (line 42)
+
+**권장**: `src/types/pagefind.d.ts` 타입 선언 추가.
+
+---
+
+### P2-3. Copy 버튼 — `navigator.clipboard` 에러 처리 없음
+
+**위치**: `src/layouts/BlogPostLayout.astro` (line 110-114)
+
+HTTP 환경이나 미지원 브라우저에서 무음 실패. try-catch 추가 권장.
+
+---
+
+### P2-4. MDX 이미지에 `loading="lazy"` 미적용
+
+`![](/images/...)` → 일반 `<img>` 태그로 렌더. `loading="lazy"` 자동 적용 안됨.
+
+**권장**: remark/rehype 플러그인으로 자동 주입.
+
+---
+
+### P2-5. `getCollection` 호출 패턴 통합
+
+거의 모든 페이지에서 동일한 호출 반복.
+
+**권장**: `getPublishedPosts()` 유틸 함수 추출.
+
+---
+
+### P2-6. 비포스트 페이지에 og:image 미설정
+
+카테고리, 태그, 시리즈 목록 페이지에 OG 이미지 없음.
+
+**권장**: 기본 OG 이미지 설정.
+
+---
+
+### P2-7. Structured Data 확장 — WebSite schema 미적용
+
+홈페이지에 `WebSite` + `SearchAction` schema 없음.
+
+---
+
+### P2-8. GitHub Actions — Node.js 22 업그레이드
+
+현재 Node 20 → LTS 22로 업데이트 권장.
+
+---
+
+### P2-9. Giscus `data-strict="0"` — 느슨한 URL 매칭
+
+경로 변경 시 댓글 유실 가능. `data-strict="1"` 권장.
+
+---
+
+### P2-10. resume 페이지 — Astro 통합 미완
+
+`public/resume/`는 별도 HTML. Astro 다크모드/스타일 없음.
+
+---
+
+## 잘한 점 (Strengths) ✅
+
+| 항목 | 상세 |
+|------|------|
+| **Content Collection + Zod** | 타입 안전한 frontmatter 검증. `source`, `series`, `draft`, `cover` 등 유연한 스키마 |
+| **Canonical URL** | 모든 페이지에 올바른 설정 |
+| **JSON-LD Structured Data** | `BlogPosting` 완비 (author, publisher, keywords, articleSection, wordCount) |
+| **다크모드 FOUC 방지** | `is:inline` 스크립트로 렌더 전 클래스 적용 |
+| **OG 이미지 자동 생성** | satori + resvg, 한국어 폰트 지원, CDN fallback |
+| **Pagefind 검색** | Lazy load, Cmd/Ctrl+K, 다크모드 CSS 변수 대응 |
+| **이벤트 cleanup** | `astro:before-swap`에서 모두 리스너 정리 |
+| **접근성 기초** | `aria-label`, semantic HTML, `focus-visible` |
+| **Sitemap + RSS + robots.txt** | SEO 3종 세트 완비 |
+| **페이지네이션** | 15개/페이지 paginate |
+| **시리즈/카테고리/태그** | 3가지 분류 체계 완비 |
+| **TOC** | 모바일 details + 데스크탑 sidebar + scroll spy |
+| **코드 복사 버튼** | 동적 주입, hover 표시, 복사 피드백 |
+| **404 페이지** | 커스텀 디자인 |
+| **CI/CD** | Type check → Build → Deploy |
+| **Tailwind v4** | `@theme`, `@custom-variant`, `@plugin` 네이티브 문법 |
+| **Shiki 듀얼 테마** | 라이트/다크 코드 하이라이팅 |
+
+---
+
+## 우선순위 로드맵
+
+```
+즉시 (P0):
+├── P0-1: 이미지 최적화 (Astro <Image /> 또는 빌드 시 WebP 변환)
+└── P0-2: 스크립트를 astro:page-load 패턴으로 전환
+
+1~2주 내 (P1):
+├── P1-1: Google Fonts → fontsource 셀프호스팅
+├── P1-2: about.astro → Astro redirects 설정
+├── P1-3: formatDate 중복 제거 (5곳 → 1곳)
+├── P1-4: .sort() → .toSorted() 전환
+├── P1-5: RSS content 필드 추가
+├── P1-6: OG 폰트 로컬화 + 버전 고정
+├── P1-7: CSP 메타 태그 추가
+└── P1-8: Skip-to-content 링크 추가
+
+시간 여유 시 (P2):
+├── P2-1~10: View Transitions, 타입 선언, lazy loading 등
+```
+
+---
+
+## 수치 요약
+
+| 항목 | 값 |
+|------|-----|
+| 소스 파일 수 (src/) | ~20개 |
+| 콘텐츠 파일 수 | ~70개 (.mdx) |
+| 이미지 파일 수 | 143개 |
+| 이미지 총 크기 | **62MB** (미최적화) |
+| 외부 스크립트 | giscus.app |
+| 외부 CSS | Google Fonts |
+| 빌드 스텝 | astro check → build → pagefind → deploy |
+| 배포 | GitHub Pages (Node 20) |
