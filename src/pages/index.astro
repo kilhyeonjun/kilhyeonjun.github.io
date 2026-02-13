@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BlogCard from '../components/BlogCard.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const recentPosts = allPosts
+  .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf())
+  .slice(0, 5);
+---
+
+<BaseLayout title="KHJ Blog" description="Backend Developer 기술 블로그">
+  <section class="py-8 text-center">
+    <h1 class="mb-3 text-4xl font-bold text-gray-900 dark:text-gray-100">
+      KHJ Blog
+    </h1>
+    <p class="text-lg text-gray-600 dark:text-gray-400">
+      Backend Developer | 기술 블로그
+    </p>
+  </section>
+
+  <section class="py-8">
+    <div class="mb-6 flex items-center justify-between">
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">최근 글</h2>
+      <a href="/blog/" class="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+        전체 보기 &rarr;
+      </a>
+    </div>
+    <div class="space-y-4">
+      {recentPosts.map((post) => (
+        <BlogCard
+          title={post.data.title}
+          description={post.data.description}
+          publishDate={post.data.publishDate}
+          category={post.data.category}
+          tags={post.data.tags}
+          slug={post.id}
+        />
+      ))}
+    </div>
+  </section>
+</BaseLayout>

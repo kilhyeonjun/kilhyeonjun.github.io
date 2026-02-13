@@ -1,0 +1,81 @@
+---
+import '../styles/global.css';
+import ThemeToggle from '../components/ThemeToggle.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  lang?: 'ko' | 'en';
+}
+
+const { title, description = 'Backend Developer 기술 블로그', lang = 'ko' } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonicalURL} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title="KHJ Blog RSS" href="/rss.xml" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <script is:inline>
+      const theme = (() => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark';
+        }
+        return 'light';
+      })();
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
+
+    <title>{title}</title>
+  </head>
+  <body class="min-h-screen">
+    <header class="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80">
+      <nav class="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
+        <a href="/" class="text-xl font-bold text-primary-600 dark:text-primary-400">
+          KHJ Blog
+        </a>
+        <div class="flex items-center gap-1">
+          <a href="/blog/" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400">
+            Blog
+          </a>
+          <a href="/tags/" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400">
+            Tags
+          </a>
+          <a href="/about/" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400">
+            About
+          </a>
+          <ThemeToggle />
+        </div>
+      </nav>
+    </header>
+
+    <main class="mx-auto max-w-4xl px-4 py-8">
+      <slot />
+    </main>
+
+    <footer class="border-t border-gray-200 dark:border-gray-700">
+      <div class="mx-auto max-w-4xl px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        <p>&copy; {new Date().getFullYear()} KHJ Blog. All rights reserved.</p>
+      </div>
+    </footer>
+  </body>
+</html>

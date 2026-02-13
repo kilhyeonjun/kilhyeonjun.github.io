@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+  const allTags = new Set<string>();
+  allPosts.forEach((post) => post.data.tags.forEach((tag) => allTags.add(tag)));
+
+  return [...allTags].map((tag) => ({
+    params: { tag },
+    props: {
+      tag,
+      posts: allPosts
+        .filter((post) => post.data.tags.includes(tag))
+        .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()),
+    },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`#${tag} | KHJ Blog`} description={`${tag} 태그의 글 목록`}>
+  <section class="py-4">
+    <h1 class="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
+      #{tag}
+    </h1>
+    <p class="mb-8 text-gray-600 dark:text-gray-400">
+      {posts.length}개의 글
+    </p>
+    <div class="space-y-4">
+      {posts.map((post) => (
+        <BlogCard
+          title={post.data.title}
+          description={post.data.description}
+          publishDate={post.data.publishDate}
+          category={post.data.category}
+          tags={post.data.tags}
+          slug={post.id}
+        />
+      ))}
+    </div>
+  </section>
+</BaseLayout>

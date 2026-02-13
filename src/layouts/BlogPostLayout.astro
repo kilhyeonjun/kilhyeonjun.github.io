@@ -1,0 +1,86 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  publishDate: Date;
+  updatedDate?: Date;
+  category: string;
+  tags: string[];
+  readingTime: number;
+}
+
+const { title, description, publishDate, updatedDate, category, tags, readingTime } = Astro.props;
+
+const formattedDate = publishDate.toLocaleDateString('ko-KR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const formattedUpdatedDate = updatedDate?.toLocaleDateString('ko-KR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout title={`${title} | KHJ Blog`} description={description}>
+  <article class="py-4">
+    <header class="mb-8 border-b border-gray-200 pb-8 dark:border-gray-700">
+      <div class="mb-4 flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+        <time datetime={publishDate.toISOString()}>{formattedDate}</time>
+        {formattedUpdatedDate && (
+          <span>(Updated: {formattedUpdatedDate})</span>
+        )}
+        <span class="rounded-full bg-primary-100 px-2.5 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-900 dark:text-primary-300">
+          {category}
+        </span>
+        <span>{readingTime}min read</span>
+      </div>
+      <h1 class="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100 sm:text-4xl">
+        {title}
+      </h1>
+    </header>
+
+    <div class="prose prose-lg max-w-none dark:prose-invert prose-headings:font-semibold prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-primary-400">
+      <slot />
+    </div>
+
+    {tags.length > 0 && (
+      <footer class="mt-12 border-t border-gray-200 pt-6 dark:border-gray-700">
+        <div class="flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <a
+              href={`/tags/${tag}/`}
+              class="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700 transition-colors hover:bg-primary-100 hover:text-primary-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-primary-900 dark:hover:text-primary-300"
+            >
+              #{tag}
+            </a>
+          ))}
+        </div>
+      </footer>
+    )}
+  </article>
+
+  <script>
+    document.querySelectorAll('.prose pre').forEach((block) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'relative group';
+      block.parentNode?.insertBefore(wrapper, block);
+      wrapper.appendChild(block);
+
+      const button = document.createElement('button');
+      button.className = 'absolute right-2 top-2 rounded bg-gray-700/50 px-2 py-1 text-xs text-gray-300 opacity-0 transition-opacity hover:bg-gray-600/50 group-hover:opacity-100';
+      button.textContent = 'Copy';
+      button.addEventListener('click', async () => {
+        const code = block.querySelector('code')?.textContent ?? '';
+        await navigator.clipboard.writeText(code);
+        button.textContent = 'Copied!';
+        setTimeout(() => { button.textContent = 'Copy'; }, 2000);
+      });
+      wrapper.appendChild(button);
+    });
+  </script>
+</BaseLayout>
