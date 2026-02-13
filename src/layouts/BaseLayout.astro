@@ -21,7 +21,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta name="generator" content={Astro.generator} />
     <link rel="canonical" href={canonicalURL} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="alternate" type="application/rss+xml" title="KHJ Blog RSS" href="/rss.xml" />
+    <link rel="alternate" type="application/rss+xml" title="kil-penguin blog RSS" href="/rss.xml" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -51,7 +51,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <header class="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80">
       <nav class="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
         <a href="/" class="text-xl font-bold text-primary-600 dark:text-primary-400">
-          KHJ Blog
+          kil-penguin blog
         </a>
         <div class="flex items-center gap-1">
           <a href="/blog/" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400">
@@ -60,7 +60,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
           <a href="/tags/" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400">
             Tags
           </a>
-          <a href="/about/" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400">
+          <a href="/resume/" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400">
             About
           </a>
           <ThemeToggle />
@@ -74,7 +74,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
     <footer class="border-t border-gray-200 dark:border-gray-700">
       <div class="mx-auto max-w-4xl px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-        <p>&copy; {new Date().getFullYear()} KHJ Blog. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} kil-penguin blog. All rights reserved.</p>
       </div>
     </footer>
   </body>

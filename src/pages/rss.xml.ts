@@ -6,7 +6,7 @@ export async function GET(context: APIContext) {
   const blog = await getCollection('blog', ({ data }) => !data.draft);
 
   return rss({
-    title: 'KHJ Blog',
+    title: 'kil-penguin blog',
     description: 'Backend Developer 기술 블로그',
     site: context.site!,
     items: blog
