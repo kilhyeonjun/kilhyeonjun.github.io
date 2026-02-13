@@ -5,8 +5,24 @@ import { Resvg } from '@resvg/resvg-js';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-const fontData = fs.readFileSync(path.resolve('src/assets/fonts/noto-sans-kr-700-normal.woff'));
-const fontRegularData = fs.readFileSync(path.resolve('src/assets/fonts/noto-sans-kr-400-normal.woff'));
+let fontData: Buffer | null = null;
+let fontRegularData: Buffer | null = null;
+
+try {
+  fontData = fs.readFileSync(path.resolve('src/assets/fonts/noto-sans-kr-700-normal.woff'));
+  fontRegularData = fs.readFileSync(path.resolve('src/assets/fonts/noto-sans-kr-400-normal.woff'));
+} catch {
+  console.warn('OG image: Font files not found, will use fallback image');
+}
+
+function createFallbackPng(): Uint8Array {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
+    <rect width="1200" height="630" fill="#0f172a"/>
+    <text x="60" y="520" font-family="sans-serif" font-size="24" font-weight="bold" fill="#3b82f6">kil-penguin blog</text>
+  </svg>`;
+  const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: 1200 } });
+  return resvg.render().asPng();
+}
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const posts = await getPublishedPosts();
@@ -19,6 +35,16 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const GET: APIRoute = async ({ props }) => {
   const { post } = props;
   const { title, category, publishDate } = post.data;
+
+  if (!fontData || !fontRegularData) {
+    const pngBuffer = createFallbackPng();
+    return new Response(new Uint8Array(pngBuffer), {
+      headers: {
+        'Content-Type': 'image/png',
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    });
+  }
 
   const formattedDate = formatDate(publishDate);
 

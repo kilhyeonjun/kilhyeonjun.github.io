@@ -11,7 +11,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <p class="mb-8 text-gray-600 dark:text-gray-400">
       요청하신 페이지가 존재하지 않거나 이동되었을 수 있습니다.
     </p>
-    <div class="flex gap-4">
+    <div class="flex flex-wrap justify-center gap-4">
       <a
         href="/"
         class="rounded-lg bg-primary-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary-700"
@@ -24,6 +24,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       >
         블로그 보기
       </a>
+      <button
+        type="button"
+        class="rounded-lg border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+        onclick="document.getElementById('search-trigger')?.click()"
+      >
+        검색으로 찾아보기
+      </button>
     </div>
   </section>
 </BaseLayout>
