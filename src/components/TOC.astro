@@ -112,7 +112,7 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
     }
 
     let ticking = false;
-    window.addEventListener('scroll', () => {
+    function handleScroll() {
       if (!ticking) {
         requestAnimationFrame(() => {
           updateActiveLink();
@@ -120,7 +120,14 @@ const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
         });
         ticking = true;
       }
-    });
+    }
+
+    window.addEventListener('scroll', handleScroll);
+
+    // Cleanup on page transition
+    document.addEventListener('astro:before-swap', () => {
+      window.removeEventListener('scroll', handleScroll);
+    }, { once: true });
 
     updateActiveLink();
   }

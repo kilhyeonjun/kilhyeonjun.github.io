@@ -1,9 +1,4 @@
 ---
-interface Props {
-  slug: string;
-}
-
-const { slug } = Astro.props;
 ---
 
 <section class="mt-12 border-t border-gray-200 pt-8 dark:border-gray-700" id="comments">
@@ -57,9 +52,17 @@ const { slug } = Astro.props;
   });
 
   // Set initial theme after giscus loads
-  window.addEventListener('message', (event) => {
+  function handleGiscusMessage(event: MessageEvent) {
     if (event.origin !== 'https://giscus.app') return;
     if (typeof event.data !== 'object' || !event.data.giscus) return;
     setGiscusTheme(getGiscusTheme());
-  });
+  }
+
+  window.addEventListener('message', handleGiscusMessage);
+
+  // Cleanup on page transition
+  document.addEventListener('astro:before-swap', () => {
+    observer.disconnect();
+    window.removeEventListener('message', handleGiscusMessage);
+  }, { once: true });
 </script>

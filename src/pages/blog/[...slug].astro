@@ -45,5 +45,5 @@ const readingTime = getReadingTime(post.body ?? '');
   <TOC headings={headings} slot="toc" />
   <Content />
   <PostNavigation prevPost={prevPost} nextPost={nextPost} />
-  <Comments slug={post.id} />
+  <Comments />
 </BlogPostLayout>

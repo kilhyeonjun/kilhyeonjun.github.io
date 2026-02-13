@@ -37,7 +37,7 @@ go run .\[코드파일명].go
 # fmt
 
 ## Println
-~~~javascript
+~~~go
 package main
 
 import "fmt"
@@ -52,7 +52,7 @@ func main() {
 # math
 
 ## Round, Floor, Ceil
-~~~javascript
+~~~go
 package main
 
 import (
@@ -77,7 +77,7 @@ Ceil은 올림
 # string
 
 ## title
-~~~javascript
+~~~go
 package main
 
 import (
@@ -100,7 +100,7 @@ func main() {
 - 16 bit로 표현되는 UTF-16이 아닌, 8 bit로 표현되는 UTF-8 인코딩 방식을 사용합니다.
 - 유니코드는 인코딩에서 한글은 3byte를 사용하고 영어는 1byte를 사용합니다.
 - Go에선 3byte int형 타입이 없기 대문에 4byte int인 int32를 사용합니다.
-~~~javascript
+~~~go
     var c rune = '가'
 ~~~
 위의 코드는 c라는 변수를 rune 타입으로 선언하면서 '가'의 유니코드 값을 넣었습니다.  

@@ -13,7 +13,7 @@ originalUrl: "https://kilhyeonjun.github.io/go/2021-10-05-go-base-5/"
 - 변수의 메모리 주소를 값으로 가지는 변수
 
 ## 포인터 생성
-~~~golang
+~~~go
 var a int = 10
 var pa *int
 pa = &a
@@ -23,7 +23,7 @@ pa = &a
 - 10을 가지는 정수형 a의 주소값을 정수형 포인터 pa에 메모리 주소 할당
 
 ## 역참조
-~~~golang
+~~~go
 *pa = 20
 ~~~
 - 포인터가 가르키는 값을 가져옴
@@ -32,7 +32,7 @@ pa = &a
 - a 값은 20으로 변경
 
 ## 포인터 swap 함수
-~~~golang
+~~~go
 // pass by pointer (call by pointer)
 func swap(n1 *int, n2 *int) {
 	temp := *n1

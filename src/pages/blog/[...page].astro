@@ -1,0 +1,62 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import { getCollection } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+  const sortedPosts = allPosts.sort(
+    (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+  );
+
+  return paginate(sortedPosts, { pageSize: 15 });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+---
+
+<BaseLayout title="Blog | kil-penguin blog" description="모든 블로그 글 목록">
+  <section class="py-4">
+    <h1 class="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">Blog</h1>
+    <p class="mb-8 text-gray-600 dark:text-gray-400">
+      총 {page.total}개의 글
+    </p>
+    <div class="space-y-4">
+      {page.data.map((post) => (
+        <BlogCard
+          title={post.data.title}
+          description={post.data.description}
+          publishDate={post.data.publishDate}
+          category={post.data.category}
+          tags={post.data.tags}
+          slug={post.id}
+        />
+      ))}
+    </div>
+
+    {page.lastPage > 1 && (
+      <nav class="mt-12 flex items-center justify-center gap-2" aria-label="페이지 네비게이션">
+        {page.url.prev && (
+          <a
+            href={page.url.prev}
+            class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
+            &larr; 이전
+          </a>
+        )}
+        <span class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+          {page.currentPage} / {page.lastPage}
+        </span>
+        {page.url.next && (
+          <a
+            href={page.url.next}
+            class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
+            다음 &rarr;
+          </a>
+        )}
+      </nav>
+    )}
+  </section>
+</BaseLayout>

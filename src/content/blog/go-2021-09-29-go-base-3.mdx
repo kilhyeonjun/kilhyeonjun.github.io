@@ -18,7 +18,7 @@ originalUrl: "https://kilhyeonjun.github.io/go/2021-09-29-go-base-3/"
 ## 소수 판별 프로그램
 - 소수 판별 함수
 
-~~~golang
+~~~go
 func prime(number int){
 	p, err := isPrime(number)
 	if err != nil {
@@ -48,7 +48,7 @@ func isPrime(n int) (bool, error) {
 ~~~
 - 구간별 소수 판별 함수
 
-~~~golang
+~~~go
 func primeRange(a int, b int){
 	if a>b {
 		temp := a
@@ -72,7 +72,7 @@ func primeRange(a int, b int){
 
 - main 함수
 
-~~~golang
+~~~go
 func main() {
 	var menu int;
 

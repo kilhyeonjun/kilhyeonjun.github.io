@@ -14,6 +14,34 @@ interface Props {
 
 const { title, description, publishDate, updatedDate, category, tags, readingTime, slug } = Astro.props;
 const ogImage = slug ? `/og/${slug}.png` : undefined;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImageURL = ogImage ? new URL(ogImage, Astro.site).href : undefined;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  image: ogImageURL,
+  datePublished: publishDate.toISOString(),
+  ...(updatedDate && { dateModified: updatedDate.toISOString() }),
+  author: {
+    '@type': 'Person',
+    name: 'kilhyeonjun',
+    url: 'https://kilhyeonjun.github.io',
+  },
+  publisher: {
+    '@type': 'Person',
+    name: 'kilhyeonjun',
+  },
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': canonicalURL.href,
+  },
+  keywords: tags.join(', '),
+  articleSection: category,
+  wordCount: readingTime * 500,
+};
 
 const formattedDate = publishDate.toLocaleDateString('ko-KR', {
   year: 'numeric',
@@ -29,6 +57,7 @@ const formattedUpdatedDate = updatedDate?.toLocaleDateString('ko-KR', {
 ---
 
 <BaseLayout title={`${title} | kil-penguin blog`} description={description} ogImage={ogImage}>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   <article class="py-4">
     <header class="mb-8 border-b border-gray-200 pb-8 dark:border-gray-700">
       <div class="mb-4 flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">

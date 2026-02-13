@@ -3,13 +3,29 @@ import { getCollection } from 'astro:content';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 
-const fontData = await fetch(
-  'https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/korean-700-normal.woff'
-).then((res) => res.arrayBuffer());
+async function fetchFont(url: string): Promise<ArrayBuffer> {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch font from ${url}: ${res.status}`);
+  }
+  return res.arrayBuffer();
+}
 
-const fontRegularData = await fetch(
-  'https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/korean-400-normal.woff'
-).then((res) => res.arrayBuffer());
+let fontData: ArrayBuffer;
+let fontRegularData: ArrayBuffer;
+
+try {
+  [fontData, fontRegularData] = await Promise.all([
+    fetchFont('https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/korean-700-normal.woff'),
+    fetchFont('https://cdn.jsdelivr.net/fontsource/fonts/noto-sans-kr@latest/korean-400-normal.woff'),
+  ]);
+} catch {
+  // Fallback: use empty ArrayBuffers so the build doesn't fail when CDN is down.
+  // OG images will render with the default satori font instead of Noto Sans KR.
+  console.warn('⚠️ Failed to fetch Korean fonts for OG images. Using fallback.');
+  fontData = new ArrayBuffer(0);
+  fontRegularData = new ArrayBuffer(0);
+}
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
@@ -134,20 +150,22 @@ export const GET: APIRoute = async ({ props }) => {
     {
       width: 1200,
       height: 630,
-      fonts: [
-        {
-          name: 'Noto Sans KR',
-          data: fontRegularData,
-          weight: 400,
-          style: 'normal',
-        },
-        {
-          name: 'Noto Sans KR',
-          data: fontData,
-          weight: 700,
-          style: 'normal',
-        },
-      ],
+      fonts: fontData.byteLength > 0
+        ? [
+            {
+              name: 'Noto Sans KR',
+              data: fontRegularData,
+              weight: 400 as const,
+              style: 'normal' as const,
+            },
+            {
+              name: 'Noto Sans KR',
+              data: fontData,
+              weight: 700 as const,
+              style: 'normal' as const,
+            },
+          ]
+        : [],
     }
   );
 

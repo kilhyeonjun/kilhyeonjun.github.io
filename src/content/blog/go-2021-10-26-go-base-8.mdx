@@ -12,7 +12,7 @@ originalUrl: "https://kilhyeonjun.github.io/go/2021-10-26-go-base-8/"
 # struct 구조체
 
 ## 구조체 정의
-~~~golang
+~~~go
 // 구조체 정의
 type Student struct {
     Name  string
@@ -23,7 +23,7 @@ type Student struct {
 ~~~
 
 ## 선언 및 속성값 할당
-~~~golang
+~~~go
 // 1)
 var s1 Student
 s1.Name = "홍길동"
@@ -50,7 +50,7 @@ var s2 Student = Student{
 ~~~
 
 ## 선언과 동시에 구조체 정의
-~~~golang
+~~~go
 var s1 struct {
 	Name  string
 	Id    int
@@ -64,7 +64,7 @@ s1.Score = 3.91
 ~~~
 
 ## pass by value
-~~~golang
+~~~go
 func defaultStudent(id int) Student {
  	var s Student
  	s.Id = id
@@ -78,7 +78,7 @@ defaultStudent(&s3)
 ~~~
 
 ## pass by pointer
-~~~golang
+~~~go
 func defaultStudent(s *Student) {
  	s.Id = 11112222
  	s.Name = "noname"
@@ -90,14 +90,14 @@ defaultStudent(&s3)
 ~~~
 
 ## 정렬 인터페이스
-~~~golang
+~~~go
 type Interface interface {
 	Len() int           // 데이터의 길이를 구함
 	Less(i, j int) bool // 대소관계를 판단. i가 작으면 true를 리턴하도록 구현
 	Swap(i, j int)      // Less 메서드에서 true가 나오면 두 데이터의 위치를 바꿈
 }
 ~~~
-~~~golang
+~~~go
 type Student struct {
 	Name  string
 	Id    int

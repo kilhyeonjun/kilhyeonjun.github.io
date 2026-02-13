@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BlogCard from '../../components/BlogCard.astro';
 import { getCollection } from 'astro:content';
+import { sortPostsByDate } from '../../lib/utils';
 
 export async function getStaticPaths() {
   const allPosts = await getCollection('blog', ({ data }) => !data.draft);
@@ -12,9 +13,7 @@ export async function getStaticPaths() {
     params: { category },
     props: {
       category,
-      posts: allPosts
-        .filter((post) => post.data.category === category)
-        .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()),
+      posts: sortPostsByDate(allPosts.filter((post) => post.data.category === category)),
     },
   }));
 }

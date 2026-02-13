@@ -1,3 +1,5 @@
+import type { CollectionEntry } from 'astro:content';
+
 export function getReadingTime(content: string): number {
   const CHARS_PER_MINUTE = 500;
   const charCount = content.replace(/\s/g, '').length;
@@ -10,4 +12,10 @@ export function formatDate(date: Date): string {
     month: 'long',
     day: 'numeric',
   });
+}
+
+export function sortPostsByDate(posts: CollectionEntry<'blog'>[]): CollectionEntry<'blog'>[] {
+  return posts.sort(
+    (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+  );
 }

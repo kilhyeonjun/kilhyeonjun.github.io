@@ -1,6 +1,7 @@
 import rss from '@astrojs/rss';
 import { getCollection } from 'astro:content';
 import type { APIContext } from 'astro';
+import { sortPostsByDate } from '../lib/utils';
 
 export async function GET(context: APIContext) {
   const blog = await getCollection('blog', ({ data }) => !data.draft);
@@ -9,8 +10,7 @@ export async function GET(context: APIContext) {
     title: 'kil-penguin blog',
     description: 'Backend Developer 기술 블로그',
     site: context.site!,
-    items: blog
-      .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf())
+    items: sortPostsByDate(blog)
       .map((post) => ({
         title: post.data.title,
         pubDate: post.data.publishDate,
