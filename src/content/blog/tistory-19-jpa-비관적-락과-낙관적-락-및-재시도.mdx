@@ -1,0 +1,349 @@
+---
+title: "JPA 비관적 락과 낙관적 락 및 재시도"
+description: "콘서트 예약 프로젝트를 개발하면서 좌석 예약에서 발생하는 동시성 문제에 대해 고민하게 되었다. 여러 사용자가 동시에 같은 좌석을 예약하려고 할 때 동시성 문제가 발생할 수 있는데, 이를 해결하기 위해 JPA에서 제공하는 비관적 락(Pessimistic Lock)과 낙관적 락(Optimistic Lock)을 사용하고, AOP를 활용한 재시도 로직을 통해 동시"
+publishDate: 2024-10-24
+category: "Backend Development"
+tags: ["Concurrency", "Java", "JPA"]
+draft: false
+source: "tistory"
+originalUrl: "https://penguin-dev.tistory.com/19"
+---
+
+![](./img/DALL·E 2024-10-24 19.05.07 - A visual representation of concurrency control showing two distinct paths_ one with a heavy lock for pessimistic locking and another with a version ic.webp)
+
+## 개요
+
+콘서트 예약 프로젝트를 개발하면서 좌석 예약에서 발생하는 동시성 문제에 대해 고민하게 되었다. 여러 사용자가 동시에 같은 좌석을 예약하려고 할 때 동시성 문제가 발생할 수 있는데, 이를 해결하기 위해 JPA에서 제공하는 **비관적 락(Pessimistic Lock)**과 **낙관적 락(Optimistic Lock)**을 사용하고, AOP를 활용한 **재시도 로직**을 통해 동시성 문제를 해결하는 방법을 알아보자.
+
+## 비관적 락(Pessimistic Lock)
+
+첫 번째로 시도한 방법은 **비관적 락**이다. (익숙한 방법이라 먼저 진행하게 되었다.) 비관적 락은 데이터베이스 레벨에서 락을 걸어 동시성 문제를 해결하는 방식으로, 여기서 말하는 락은 **X Lock(Exclusive Lock)**을 의미한다.
+
+```haxe
+// ConcertFacade.java
+@Transactional
+public Reservation reserveConcertSeatWithPessimisticLock(Long concertSeatId, Long userId) {
+    var user = userQueryService.getUser(new GetUserByIdQuery(userId));
+
+    var concertSeat = concertQueryService.getConcertSeat(
+        new GetConcertSeatByIdWithLockQuery(concertSeatId));
+
+    var concertSchedule = concertQueryService.getConcertSchedule(
+        new GetConcertScheduleByIdQuery(concertSeat.getConcertScheduleId()));
+
+    concertSchedule.validateReservationTime();
+
+    concertCommandService.reserveConcertSeat(
+        new ReserveConcertSeatCommand(concertSeat.getId()));
+
+    Long reservationId = concertCommandService.createReservation(
+        new CreateReservationCommand(concertSeat.getId(), user.getId()));
+
+    return concertQueryService.getReservation(new GetReservationByIdQuery(reservationId));
+}
+
+// ConcertRepositoryImpl.java
+@Lock(LockModeType.PESSIMISTIC_WRITE)
+@Query("select cs from ConcertSeat cs where cs.id = :concertSeatId")
+Optional<ConcertSeat> findByIdWithLock(Long concertSeatId);
+```
+
+위의 코드는 비관적 락을 이용해 좌석을 예약하는 코드이다. `@Transactional` 어노테이션을 사용해 트랜잭션을 시작하고, `concertQueryService.getConcertSeat` 메서드에서 좌석 정보를 가져올 때 `@Lock(LockModeType.PESSIMISTIC_WRITE)`를 사용해 해당 좌석에 락을 걸었다. 이렇게 하면 트랜잭션이 종료될 때까지 다른 트랜잭션에서 해당 좌석에 대한 작업을 진행할 수 없다. **비관적 락**을 사용하면 동시성 문제를 해결할 수 있지만, 락을 점유한 트랜잭션이 끝나기 전까지 다른 트랜잭션이 대기하게 된다.
+
+### 비관적 락의 문제점
+
+좌석 예약의 특성상 하나의 좌석에는 한 명만 예약할 수 있다. 하지만 실패하는 다른 요청도 대기하게 되어, 불필요한 대기가 발생할 수 있다.
+
+#### 비관적 락 시퀀스 다이어그램
+
+![](/images/tistory/19/스크린샷 2024-10-24 오후 6.53.00.png)
+
+이 다이어그램에서 client A가 좌석 예약 요청을 보내고 락을 획득하면 client B와 client C는 대기하게 된다. client A가 좌석 예약에 성공한 후, client B와 client C는 실패하게 된다. 비관적 락에서는 이처럼 불필요한 대기 시간이 발생할 수 있다.
+
+## 낙관적 락(Optimistic Lock)
+
+두 번째로 시도한 방법은 **낙관적 락**이다. 낙관적 락은 데이터베이스 레벨에서 락을 걸지 않고, **버전 필드**를 사용하여 애플리케이션 레벨에서 동시성 문제를 해결한다.
+
+```bash
+// ConcertSeat.java
+...
+import jakarta.persistence.Version;
+
+@Entity
+@Table(name = "concert_seat")
+public class ConcertSeat extends BaseEntity {
+
+  ...
+
+  @Version
+  private Long version;
+
+  ...
+}
+```
+
+좌석 엔티티에 `@Version` 어노테이션을 추가하여 버전 관리를 도입했다. 이 버전 필드는 처음 조회할 때의 버전과 업데이트할 때의 버전이 다르면 충돌로 간주하고 예외를 발생시킨다.
+
+### 낙관적 락 예외 처리
+
+-   `javax.persistence.OptimisticLockException` (JPA)
+-   `org.hibernate.StaleObjectStateException` (Hibernate)
+-   `org.springframework.orm.ObjectOptimisticLockingFailureException` (Spring)
+
+Spring 기반 JPA에서는 낙관적 락 충돌 시 `OptimisticLockingFailureException`이 발생한다. 이를 통해 충돌을 감지할 수 있다.
+
+```haxe
+// ConcertFacade.java
+@Transactional
+public Reservation reserveConcertSeat(Long concertSeatId, Long userId) {
+    var user = userQueryService.getUser(new GetUserByIdQuery(userId));
+
+    var concertSeat = concertQueryService.getConcertSeat(
+        new GetConcertSeatByIdQuery(concertSeatId));
+
+    var concertSchedule = concertQueryService.getConcertSchedule(
+        new GetConcertScheduleByIdQuery(concertSeat.getConcertScheduleId()));
+
+    concertSchedule.validateReservationTime();
+
+    concertSeat.reserve();
+
+    Long reservationId = concertCommandService.createReservation(
+        new CreateReservationCommand(concertSeat.getId(), user.getId()));
+
+    return concertQueryService.getReservation(new GetReservationByIdQuery(reservationId));
+}
+```
+
+위의 코드는 낙관적 락을 사용한 좌석 예약 코드이다. **버전 필드**를 통해 자원을 관리하며, 버전이 일치하지 않으면 `OptimisticLockingFailureException` 예외가 발생해 충돌을 감지한다. 비관적 락과 달리 **낙관적 락은 대기하지 않고 예외를 즉시 발생**시키기 때문에 불필요한 대기가 발생하지 않는다.
+
+#### 낙관적 락 시퀀스 다이어그램
+
+위 다이어그램에서 client A와 client B가 동시에 좌석을 예약하려고 시도한다. client A가 먼저 예약을 성공하면서 버전이 업데이트되고, client B는 버전이 일치하지 않아 예외가 발생한다.
+
+### 낙관적 락의 재시도 로직
+
+![](/images/tistory/19/스크린샷 2024-10-24 오후 6.53.17.png)
+
+낙관적 락은 대기하지 않고 예외를 발생시키기 때문에 **재시도 로직**을 적용할 수 있다. 예외가 발생하면 다시 시도하도록 설계하면, 충돌 시 자동으로 재시도할 수 있다.
+
+#### try-catch문을 사용한 재시도 로직
+
+```java
+// ConcertFacade.java
+@Transactional
+public Reservation reserveConcertSeatWithRetry(Long concertSeatId, Long userId) {
+    int retryCount = 0;
+    while (retryCount < 3) {
+        try {
+            return reserveConcertSeat(concertSeatId, userId);
+        } catch (OptimisticLockingFailureException e) {
+            retryCount++;
+        }
+    }
+}
+```
+
+위 코드는 낙관적 락 충돌 시 3회까지 재시도하는 코드이다. `OptimisticLockingFailureException` 예외가 발생하면 `retryCount`를 증가시키고, 최대 3회까지 재시도한다.하지만 재시도 로직이 핵심 로직에 포함되면 SRP(Single Responsibility Principle)에 위배되므로,재시도 로직을 별도의 클래스로 분리해 관리하는 것이 좋다. 이를 위해 **AOP**를 활용할 수 있다.
+
+#### AOP를 사용한 재시도 로직 (직접 구현)
+
+```javascript
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Retry { }
+```
+
+우선 `@Retry` 어노테이션을 정의한다.
+
+```java
+@Order(Ordered.LOWEST_PRECEDENCE - 1)
+@Aspect
+@Component
+public class OptimisticLockRetryAspect {
+
+    private static final int MAX_RETRIES = 1000;
+    private static final int RETRY_DELAY_MS = 100;
+
+    @Pointcut("@annotation(Retry)")
+    public void retry() {
+    }
+
+    @Around("retry()")
+    public Object retryOptimisticLock(ProceedingJoinPoint joinPoint) throws Throwable {
+        Exception exceptionHolder = null;
+        for (int attempt = 0; attempt < MAX_RETRIES; attempt++) {
+            try {
+                return joinPoint.proceed();
+            } catch (OptimisticLockException | ObjectOptimisticLockingFailureException | StaleObjectStateException e) {
+                exceptionHolder = e;
+                Thread.sleep(RETRY_DELAY_MS);
+            }
+        }
+        throw exceptionHolder;
+    }
+}
+```
+
+다음으로 AOP를 사용한 재시도 로직을 구현한다. `@Retry` 어노테이션이 붙은 메서드에 대해 재시도 로직이 적용된다. 재시도 횟수와 재시도 간격을 설정할 수 있으며, 낙관적 락 충돌 시 재시도한다.`@Order(Ordered.LOWEST_PRECEDENCE - 1)` 어노테이션을 사용하여 **Advice가 적용될 순서를 결정**할 수 있다. `@Order` 안의 값이 작을수록 해당 어노테이션이 먼저 적용되며, `@Transactional` 직전에 실행되기 위해 `@Order(Ordered.LOWEST_PRECEDENCE - 1)`을 사용하였다.
+
+```javascript
+// ConcertFacade.java
+@Transactional
+@Retry
+public Reservation reserveConcertSeat(Long concertSeatId, Long userId) {
+    // 좌석 예약 코드
+}
+```
+
+#### Spring Retry 라이브러리 활용
+
+Spring에서는 `spring-retry` 라이브러리를 사용해 간단하게 재시도 로직을 적용할 수 있다. 이 라이브러리는 @Retryable 어노테이션과 함께 다양한 기능을 제공한다.[https://github.com/spring-projects/spring-retry](https://github.com/spring-projects/spring-retry)
+
+ [GitHub - spring-projects/spring-retryContribute to spring-projects/spring-retry development by creating an account on GitHub.github.com](https://github.com/spring-projects/spring-retry)
+
+```stylus
+implementation("org.springframework.retry:spring-retry")
+```
+
+의존성을 추가하고, @EnableRetry 어노테이션을 통해 활성화할 수 있다.
+
+```crystal
+import org.springframework.retry.annotation.EnableRetry;
+
+@SpringBootApplication
+@EnableRetry
+public class HhplusConcertApplication {
+  public static void main(String[] args) {
+    SpringApplication.run(HhplusConcertApplication.class, args);
+  }
+}
+```
+
+```crystal
+import org.springframework.retry.annotation.Retryable;
+
+@Retryable(
+    retryFor = ObjectOptimisticLockingFailureException.class,
+    noRetryFor = CoreException.class
+)
+@Transactional
+public Reservation reserveConcertSeat(Long concertSeatId, Long userId) {
+    ...코드 동일
+}
+```
+
+이와 같이 `@Retryable`을 사용해 낙관적 락 충돌 시 재시도를 간편하게 적용할 수 있다.
+
+## 비관적 락과 낙관적 락 성능 비교
+
+```dart
+@Nested
+@DisplayName("동시성 테스트 - 동일 좌석 동시 예약")
+class ReserveConcertSeatTest {
+
+    @Test
+    @DisplayName("동시성 테스트 - 동일 좌석 동시 예약")
+    void shouldSuccessfullyReserveConcertSeat() {
+
+        // given
+        final int threadCount = 100;
+        ConcertSchedule concertSchedule = // 콘서트 스케줄 생성
+        ConcertSeat concertSeat = // 콘서트 좌석 생성
+        List<User> users = IntStream.range(0, threadCount)
+            .mapToObj(i ->
+                // 유저 생성)
+            .toList();
+
+        // when
+        final List<CompletableFuture<Void>> futures = IntStream.range(0, threadCount)
+            .mapToObj(i -> CompletableFuture.runAsync(() -> {
+                try {
+                    concertFacade.reserveConcertSeat(concertSeat.getId(), users.get(i).getId());
+                } catch (CoreException e) {
+                    if ("이미 예약된 좌석") {
+                        return;
+                    }
+                    throw e;
+                }
+            })).toList();
+
+        long start = System.currentTimeMillis();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+        long end = System.currentTimeMillis();
+
+        // then
+        logger.info("Execution Time: " + (end - start) + "ms");
+        final ConcertSeat reservedConcertSeat = concertSeatJpaRepository.findById(concertSeat.getId()).get();
+        assertThat(reservedConcertSeat.getIsReserved()).isTrue();
+        final List<Reservation> reservations = reservationJpaRepository.findAll();
+        assertThat(reservations).hasSize(1);
+    }
+}
+```
+
+위와 같은 동시성 테스트로 **비관적 락**과 **낙관적 락**의 성능을 비교할 수 있다. `threadCount`는 요청하는 사용자 수를 나타낸다. 아래는 대략적인 성능 테스트 결과이다. 테스트 환경에 따라 값은 달라질 수 있으며, DB는 H2를 사용했다.
+
+### 성능 테스트 결과
+
+#### 사용자 수 1명
+
+![](/images/tistory/19/스크린샷 2024-10-24 오후 6.28.49.png)
+
+![](/images/tistory/19/스크린샷 2024-10-24 오후 6.29.25.png)
+
+-   **비관적 락**: 23ms
+-   **낙관적 락**: 19ms
+
+동시성 처리가 필요 없는 상황에서는 낙관적 락이 약간 더 빠르다. 락을 걸지 않는 낙관적 락의 특성상 비관적 락보다 빠른 것으로 보인다.
+
+#### 사용자 수 100명
+
+![](/images/tistory/19/스크린샷 2024-10-24 오후 6.30.28.png)
+
+![](/images/tistory/19/스크린샷 2024-10-24 오후 6.31.18.png)
+
+-   **비관적 락**: 136ms
+-   **낙관적 락**: 1043ms
+
+낙관적 락이 예상보다 훨씬 느렸다. 이는 기본적으로 **`@Retryable` 어노테이션의 재시도 딜레이가 1000ms**로 설정되어 있기 때문이다. 이를 고려해 **재시도 딜레이를 50ms로 설정**해 다시 테스트를 진행했다.
+
+```crystal
+import org.springframework.retry.annotation.Backoff;
+
+@Retryable(
+    retryFor = RuntimeException.class,
+    noRetryFor = CoreException.class,
+    backoff = @Backoff(50)
+)
+@Transactional
+public Reservation reserveConcertSeat(Long concertSeatId, Long userId) {
+    // 좌석 예약 코드
+}
+```
+
+#### 사용자 수 100명 (재시도 딜레이 50ms 설정 후)
+
+![](/images/tistory/19/스크린샷 2024-10-24 오후 6_1.30)
+
+![](/images/tistory/19/스크린샷 2024-10-24 오후 6.36.49.png)
+
+-   **비관적 락**: 136ms
+-   **낙관적 락**: 89ms
+
+딜레이를 줄이자 낙관적 락이 더 빠르게 동작했다.
+
+#### 사용자 수 10000명
+
+![](/images/tistory/19/스크린샷 2024-10-24 오후 6.38.09.png)
+
+![](/images/tistory/19/스크린샷 2024-10-24 오후 6.39.01.png)
+
+-   **비관적 락**: 1678ms
+-   **낙관적 락**: 835ms
+
+사용자 수가 많아질수록 낙관적 락의 성능이 더 우수했다. 대량의 요청이 있을 때 **낙관적 락과 재시도 로직을 결합한 방법**이 성능상 유리한 결과를 보였다.
+
+## 결론
+
+**비관적 락**은 트랜잭션을 대기시키면서 공정성을 보장하지만, 불필요한 대기 시간을 유발할 수 있다. 반면 **낙관적 락**은 대기 없이 충돌을 감지하고 예외를 발생시키기 때문에 성능 면에서 유리하지만, 공정성을 보장하지 못할 수 있다. 좌석 예약과 같은 상황에서는 낙관적 락이 더 적합하며, **재시도 로직**을 통해 충돌 시 자동으로 다시 시도하도록 설계할 수 있다.

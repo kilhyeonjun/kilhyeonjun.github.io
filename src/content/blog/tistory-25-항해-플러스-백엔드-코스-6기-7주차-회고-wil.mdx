@@ -1,0 +1,125 @@
+---
+title: "항해 플러스 백엔드 코스 6기 7주차 회고 WIL"
+description: "지원페이지에서 추천 코드에 `3ZTeU1`를 입력하시면 `20만원` 할인 혜택을 받을 수 있습니다. 항해 플러스 과정에 관심 있는 분들은 아래 링크를 통해 신청해보세요! 궁금한 점이나 커피챗을 원하시면 LinkedIn이나 `kboxstar@gmail.com`으로 연락주세요. 항해 플러스 과정 페이지 개발자 커리어 개척 캠프 항해99, 첫 취업부터 현직자 역"
+publishDate: 2024-11-10
+category: "Career & Growth"
+tags: ["Learning", "Bootcamp"]
+series:
+  name: "항해 플러스 백엔드 회고"
+  order: 7
+draft: false
+source: "tistory"
+originalUrl: "https://penguin-dev.tistory.com/25"
+---
+
+![](/images/tistory/25/Backend Development Illustration Nov 10 2024.webp)
+
+## 항해 플러스 추천인 코드
+
+지원페이지에서 추천 코드에 `3ZTeU1`를 입력하시면 `20만원` 할인 혜택을 받을 수 있습니다.
+항해 플러스 과정에 관심 있는 분들은 아래 링크를 통해 신청해보세요! 궁금한 점이나 커피챗을 원하시면 [LinkedIn](https://www.linkedin.com/in/kilhyeonjun/)이나 `kboxstar@gmail.com`으로 연락주세요.
+
+[항해 플러스 과정 페이지](https://hanghae99.spartacodingclub.kr/)
+
+ [개발자 커리어 개척 캠프 항해99, 첫 취업부터 현직자 역량 강화까지10년이 지나도 남는 커리큘럼을 바탕으로 커리어를 개척하세요. 진정성있는 멘토링과 2천 명이 넘는 끈끈한 커뮤니티가 여러분과 함께 합니다.hanghae99.spartacodingclub.kr](https://hanghae99.spartacodingclub.kr/)
+
+## 개요
+
+이번 주차에는 캐싱 또는 Redis를 통해 성능 개선을 진행하는 시간을 가졌습니다.
+조회가 오래걸리는 쿼리에 대해 캐싱을 적용하거나 기존 RDBMS로 되어있는 대기열을 Redis로 변경하여 성능 개선을 진행하였습니다.
+
+### 1\. 문제
+
+캐시에는 로컬 캐시와 글로벌 캐시가 있으며 어느 캐시를 사용해야되는 지에 대한 고민이 있었으며 다양한 캐싱 전력과 어느 데이터에 필요한지에 대한 고민이 있었습니다.
+대기열의 경우 RDBMS에서 Redis로 이관할 때의 장점에 대한 고민이 있었으며 Redis는 세션스토어 그리고 저번에 진행했던 분산락 외에는 처음 활용해보는 것이라 어느 자료구조가 있는지 어떻게 활용해야할지에 대한 고민이 있었습니다.
+
+### 2\. 시도
+
+캐싱에 대해 이론적인 부분을 공부하고 콘서트 예약 시나리오에 필요한 부분에 대해 고려 후 적용해봤습니다.
+Redis의 자료구조에 대한 이해와 Redis를 활용한 대기열 구현에 대해 공부하고 적용해봤습니다.
+[캐시(Cache) 와 캐싱 전략(Caching Strategy)](https://penguin-dev.tistory.com/24)
+
+### 3\. 해결
+
+콘서트 예약 시나리오에서 빈번한 조회가 발생하며 변경이 적은 데이터에 대해 캐싱을 적용하였습니다.
+콘서트 정보, 콘서트 스케줄 정보에 대해 캐싱을 적용하였습니다.
+비지니스에 캐싱로직이 들어있는건 SRP(Single Responsibility Principle)에 위배되는 것 같아서 AOP방식을 활용하여 캐싱로직을 분리하였습니다.
+AOP로는 `spring-boot-starter-data-redis` 라이브러리 의존성을 주입받아 `@Cacheable` 어노테이션을 활용하여 캐싱로직을 분리하였습니다.Redis로 캐싱을 적용할 때 직렬화시에 발생하는 이슈에 대해 고민하였습니다.
+[SerializationException 해결하기](https://penguin-dev.tistory.com/24#SerializationException%20%ED%95%B4%EA%B2%B0%ED%95%98%EA%B8%B0-1)
+이 오류는 Java 8에서 추가된 `LocalDate`, `LocalTime`, `LocalDateTime과` 같은 날짜/시간 타입이 기본적으로 `Jackson` 라이브러리에서 지원되지 않기 때문에 발생하는 오류입니다.
+`jackson-datatype-jsr310` 모듈을 추가하여 해당 문제를 해결하는 과정을 정리했습니다.직렬화된 데이터를 Java 객체로 역직렬화하는 과정에서도 이슈가 발생했습니다.
+[ClassCastException 해결하기](https://penguin-dev.tistory.com/24#ClassCastException%20%ED%95%B4%EA%B2%B0%ED%95%98%EA%B8%B0-1)
+
+```css
+@Bean
+public RedisCacheConfiguration redisCacheConfiguration() {
+return RedisCacheConfiguration.defaultCacheConfig()
+    .entryTtl(Duration.ofSeconds(60))
+    .disableCachingNullValues()
+    .serializeKeysWith(
+        RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
+    )
+    .serializeValuesWith(
+        RedisSerializationContext.SerializationPair.fromSerializer(
+            new GenericJackson2JsonRedisSerializer())
+    );
+}
+```
+
+위와 같이 RedisCache 설정을 하였습니다.
+Redis에서 JSON 형태로 저장된 데이터를 가져올 때, 기본적으로 LinkedHashMap으로 변환하기 때문에 발생하는 문제입니다. 이를 특정 클래스, 예를 들어 Concert 클래스에 바로 캐스팅하려 하면 타입 불일치로 인해 예외가 발생하게 됩니다.
+
+```haxe
+@Bean
+public RedisCacheConfiguration redisCacheConfiguration() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule());
+    objectMapper.activateDefaultTyping(
+        objectMapper.getPolymorphicTypeValidator(),  // 타입 검증기
+        ObjectMapper.DefaultTyping.EVERYTHING,       // 모든 객체에 타입 정보 추가
+        JsonTypeInfo.As.WRAPPER_OBJECT              // 타입정보를 객체를 감싸는 형태로 추가
+    );
+
+    return RedisCacheConfiguration.defaultCacheConfig()
+        .entryTtl(Duration.ofSeconds(60))
+        .disableCachingNullValues()
+        .serializeKeysWith(
+            RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer())
+        )
+        .serializeValuesWith(
+            RedisSerializationContext.SerializationPair.fromSerializer(
+                new GenericJackson2JsonRedisSerializer(objectMapper))
+        );
+}
+```
+
+이 문제를 해결하는 방법에선 `ObjectMapper`에 설정을 추가해서 클래스 타입 정보를 같이 저장하는 방식으로 해결할 수 있습니다.이러한 방식도 다양한 문제가 있었습니다. 버저닝 이슈라던지 메타정보로인해 데이터가 불필요하게 커지는 문제가 있었습니다.
+`GenericJackson2JsonRedisSerializer`를 `Serializer`로 사용한 이유는 별도의 설정없이 편하게 역직렬화를 할 수 있기 때문입니다.
+하지만 이러한 고민들로 인해 다양한 `RedisSerializer`에 대해 고민이 생겼으며 이에 대한 해결 방법을 [GenericJackson2JsonRedisSerializer의 문제점](https://penguin-dev.tistory.com/24#GenericJackson2JsonRedisSerializer%EC%9D%98%20%EB%AC%B8%EC%A0%9C%EC%A0%90-1)에 정리했습니다.그리고 Redis를 활요한 대기열 구현에도 고민이 있었습니다.
+[대기열 방식 변경](https://github.com/hhpb-code/hhplus-concert/blob/master/docs/CACHE_REDIS_QUEUE.md)
+이번 주차에 작성했던 보고서인데 캐싱 전략과 트러블 슈팅에 대해 많은 시간을 쏟아서 대기열 방식 변경에 대해선 많은 시간을 쏟지 못했습니다.
+대기열 구현을 위해 Redis의 ZSET(Sorted Set)을 활용하였습니다.
+ZSET(Sorted Set)은 score라는 값을 기준으로 정렬된 데이터를 저장하는 자료구조입니다. (set 자료구조기에 중복도 없습니다.)입장 순서에 따라 score를 부여하여 대기열을 구현하였으며 기존 은행창구 방식에서 놀이공원 방식으로 변경하였습니다.
+은행창구방식이란 활성화할 수 있는 토큰의 수를 제한하여 활성화 수의 여유가 있을 때 대기중인 대기열에서 순서대로 활성화하는 방식입니다.
+놀이공원 방식이란 활성화할 수 있는 토큰의 수를 제한하지 않고 특정 시간마다 특정 개수의 대기중인 대기열을 활성화하는 방식입니다.
+두 가지 방식은 서로 장단점이 있습니다. 은행창구 방식은 활성화 수를 제한하여 간단하게 원하는 수치만큼 트래픽 조절이 가능하지만 대기중인 토큰이 언제 활성화될지 정확한 값을 알 수 없습니다.
+놀이공원방식은 활성화되는 시점을 정확하게 계산 할 수 있지만 서버의 부화를 조절하기위해 서버의 TPS를 계산하고 클라이언트의 쿼리개수를 파악하는 등의 다양한 분석이 필요하며 특정개수가 같은 시간마다 활성화 되므로 공정성에 대한 의문이 생길 수 있습니다.
+하지만 놀이공원 방식을 선택한 이유는 사용자입장에서 대기시간을 알 수 없다면 이탈하는 가능성이 높아지며 서비스의 품질을 떨어뜨릴 수 있기 때문입니다. 서버의 부화 문제는 계산을 해야하는 복잡한 과정이 있지만 부하 조절을 못하는 것이 아니라 큰 문제는 아니였으며 공정성 문제는 사용자가 알기 어렵다는 점에 대해 고려하여 놀이공원 방식을 선택하였습니다.
+
+### 4\. 알게 된 점
+
+캐시와 캐싱의 차이와 다양한 캐싱전략에 대해 알게되었습니다.
+Redis의 자료구조와 ZSET에 대해 알게되었습니다.
+RedisSerializer의 종류 및 장단점에 대해 알게되었습니다.
+
+### Keep : 현재 만족하고 유지할 부분
+
+이론을 공부하고 실습을 진행하는 방법을 유지하고 싶습니다.
+
+### Problem : 개선이 필요한 부분
+
+시간을 효율적으로 사용해야할 것 같습니다. 이론에 대한 공부 및 트러블 슈팅으로 인해 이번 주차에서 성능비교를 진행하지 못한 것이 아쉽습니다.
+
+### Try : 개선을 위한 시도
+
+이론에 대해 공부하는 범위를 정하며 이후 실습과 이론을 병행하는 형태로 진행하며 검증하는 과정을 진행해보려 합니다.

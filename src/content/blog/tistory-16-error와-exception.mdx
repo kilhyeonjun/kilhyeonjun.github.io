@@ -1,0 +1,50 @@
+---
+title: "Error와 Exception"
+description: "프로그램이 실행되는 동안 예상치 못한 문제들이 발생할 수 있다. 이를 오류라고 하며, 오류의 종류에는 `Error`와 `Exception`이 있다. 이 두 가지는 모두 문제 상황을 나타내지만, 그 본질과 처리 방식에 차이가 있다. 이번 글에서는 `Error`와 `Exception`의 차이점을 알아보고, 이를 어떻게 구분하고 처리해야 하는지 설명한다. `Er"
+publishDate: 2024-10-21
+category: "Backend Development"
+tags: ["Java"]
+draft: false
+source: "tistory"
+originalUrl: "https://penguin-dev.tistory.com/16"
+---
+
+![](/images/tistory/16/img.webp)
+
+## 개요
+
+프로그램이 실행되는 동안 예상치 못한 문제들이 발생할 수 있다.
+이를 **오류**라고 하며, 오류의 종류에는 `Error`와 `Exception`이 있다.
+이 두 가지는 모두 문제 상황을 나타내지만, 그 본질과 처리 방식에 차이가 있다.
+이번 글에서는 `Error`와 `Exception`의 차이점을 알아보고, 이를 어떻게 구분하고 처리해야 하는지 설명한다.
+
+![Throwable 클래스](/images/tistory/16/java-error-exception-001.png)
+
+### Error란?
+
+`Error`는 시스템 레벨에서 발생하는 치명적인 문제를 의미한다.
+주로 **자바 가상 머신(JVM)**의 동작과 관련된 문제들이며, 개발자가 직접 해결하거나 회복할 수 없는 상황이다.
+`Error`가 발생하면 프로그램의 실행을 계속하기 어려운 경우가 많다.대표적인 `Error`에는 다음과 같은 것들이 있다:
+
+-   **`OutOfMemoryError`**: JVM이 더 이상 메모리를 할당할 수 없을 때 발생한다.
+-   **`StackOverflowError`**: 무한 재귀 호출로 인해 스택 메모리가 초과될 때 발생한다.
+
+### Exception이란?
+
+`Exception`은 프로그램 내에서 발생할 수 있는 예외적인 상황을 의미한다.
+`Error`와는 달리, `Exception`은 개발자가 예측하고 처리할 수 있는 문제다.
+잘못된 입력값, 파일 입출력 오류 등 다양한 예외 상황이 발생할 수 있으며, 적절한 예외 처리를 통해 프로그램의 흐름을 제어할 수 있다.`Exception`은 크게 **Checked Exception**과 **Unchecked Exception**으로 나뉜다.
+
+#### Checked Exception
+
+**Checked Exception**은 컴파일 시점에 확인되는 예외로, 반드시 예외 처리를 해야 한다.
+이 예외는 `RuntimeException` 클래스를 상속하지 않는 예외 클래스들이다.
+복구 가능성이 있는 예외이기 때문에 적절한 예외 처리를 통해 문제를 해결하거나 프로그램을 정상 상태로 되돌릴 수 있다.
+예외 처리를 하지 않으면 컴파일 오류가 발생한다.
+
+#### Unchecked Exception
+
+**Unchecked Exception**은 컴파일 시점에 확인되지 않는 예외로, 예외 처리를 강제하지 않는다.
+이 예외는 `RuntimeException` 클래스를 상속한 예외 클래스들이다.
+일반적으로 복구 가능성이 낮으며, 예외 처리를 하지 않아도 컴파일 오류가 발생하지 않는다.
+하지만 발생 시 예기치 않은 동작을 초래할 수 있으므로 주의가 필요하다.

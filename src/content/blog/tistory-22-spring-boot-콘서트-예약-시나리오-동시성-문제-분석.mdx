@@ -1,0 +1,179 @@
+---
+title: "Spring Boot 콘서트 예약 시나리오 동시성 문제 분석"
+description: "https://github.com/hhpb-code/hhplus-concert GitHub - hhpb-code/hhplus-concert: 콘서트 예약 서비스콘서트 예약 서비스. Contribute to hhpb-code/hhplus-concert development by creating an account on GitHub.github.com 콘서트"
+publishDate: 2024-10-31
+category: "Backend Development"
+tags: ["Concurrency", "Java", "Spring Boot"]
+draft: false
+source: "tistory"
+originalUrl: "https://penguin-dev.tistory.com/22"
+---
+
+![](/images/tistory/22/Concert Reservation System Illustration.webp)
+
+## 개요
+
+[https://github.com/hhpb-code/hhplus-concert](https://github.com/hhpb-code/hhplus-concert)
+
+ [GitHub - hhpb-code/hhplus-concert: 콘서트 예약 서비스콘서트 예약 서비스. Contribute to hhpb-code/hhplus-concert development by creating an account on GitHub.github.com](https://github.com/hhpb-code/hhplus-concert)
+
+콘서트 예약 시스템은 다수의 사용자가 동시에 접근할 수 있기 때문에 여러 동시성 문제가 발생할 수 있다.
+특히 좌석 예약과 같은 경우, 동일 좌석이 중복 예약되거나 잘못된 예약 내역이 처리될 가능성이 높다.
+이 글에서는 콘서트 예약 서비스에서 발생할 수 있는 대표적인 동시성 문제를 분석하고 이를 해결하기 위한 방안을 제시한다.
+
+## 동시성 문제란?
+
+동시성 문제는 여러 프로세스나 스레드가 동일한 자원에 접근할 때 발생하는 문제로, **Race Condition**(경쟁 상태)이 대표적인 예다.
+이 문제는 두 개 이상의 프로세스나 스레드가 **동시에 공유 자원에 접근할 경우** 동시성 제어가 제대로 이루어지지 않아 발생한다.
+동시성 문제가 제대로 해결되지 않으면 예약 서비스의 신뢰성과 일관성이 저하될 수 있다.
+
+## 발생 가능한 동시성 문제
+
+### 1\. 좌석 선점(예약)
+
+-   **문제**: 여러 사용자가 동일한 좌석을 동시에 예약하려고 할 때, 좌석이 중복 예약될 가능성이 있다.
+-   **원인**: 좌석을 예약할 때 동일한 좌석을 동시에 확인하고, '예약 가능'으로 판단하는 순간에 서로 다른 사용자가 해당 좌석을 차지하려고 시도하는 상황이 발생할 수 있다.
+
+### 2\. 유저 포인트 충전
+
+-   **문제**: 한 사용자가 동시에 여러 요청을 통해 포인트를 충전하려고 할 경우, 갱신 손실(lost update)이 발생할 수 있다.
+-   **원인**: 사용자가 포인트를 충전할 때 '현재 포인트 + 추가 포인트'로 업데이트할 때, 동시에 업데이트 요청이 들어오면 한쪽의 업데이트가 덮어쓰여져 잘못된 최종 포인트가 기록될 수 있다.
+
+### 3\. 예약 내역 결제
+
+-   **문제**: 동일한 예약 내역에 대해 여러 결제 요청이 동시에 발생하면, 중복 결제가 처리될 가능성이 있다.
+-   **원인**: 예약 시스템에서 결제 요청이 동시에 발생했을 때, 결제가 중복 처리되어 사용자의 계좌에서 중복된 금액이 차감될 수 있다.
+
+## 동시성 제어 방식
+
+동시성 문제를 해결하기 위해서는 **동시성 제어**가 필요하다. 이전에 [분산환경에서의 동시성 제어](https://penguin-dev.tistory.com/10)에 대해 다룬 적이 있다.
+해당 글에서는 비관적 락, 낙관적 락(버전, 타임스탬프), 분산 락에 대한 내용을 다뤘고, 이번에는 분산 락 구현 방법과 메시지 큐를 이용한 방법을 추가하여 설명하겠다.
+
+### 1\. 비관적 락(Pessimistic Lock)
+
+-   **동작 방식**: 트랜잭션을 시작할 때 해당 자원을 잠그고, 다른 트랜잭션이 접근하지 못하도록 제한하는 방식이다. (e.g., Shared Lock, Exclusive Lock)
+-   **장점**: 구현이 간단하며 데이터 일관성을 보장할 수 있다.
+-   **단점**: 자원의 점유로 인해 다른 트랜잭션이 대기해야 하므로 성능이 저하될 수 있으며, 특히 Exclusive Lock을 사용할 경우 Deadlock이 발생할 위험이 있다.
+
+이부분은 MySQL에서 SQL 쿼리에선 `FOR SHARE`(s lock)와 `FOR UPDATE`(x lock)를 사용하여 구현할 수 있다.
+JPA에서는 `@Lock(LockModeType.PESSIMISTIC_WRITE)`와 `@Lock(LockModeType.PESSIMISTIC_READ)`를 사용하여 구현할 수 있다.
+
+### 2\. 낙관적 락(Optimistic Lock)
+
+-   **동작 방식**: 자원에 대해 버전이나 타임스탬프를 가져오고 업데이트 시에 버전이나 타임스탬프를 비교하여 충돌을 검출하는 방식이다.
+-   **장점**: 별도의 대기가 없어 성능이 우수하며, Deadlock 발생 가능성이 낮다. (단, FK 제약조건이 있는 경우 발생 가능)
+-   **단점**: 충돌이 발생할 경우 롤백 후 재시도해야 하기 때문에 서버 부하가 증가할 수 있다.
+
+이부분은 JPA에서 `@Version`을 사용하여 구현할 수 있다.
+JPA에서 낙관적락과 비관적락에 대해 궁금하다면 [비관적 락과 낙관적 락 및 재시도](https://penguin-dev.tistory.com/19)를 참고하자.
+
+### 3\. 분산 락(Distributed Lock)
+
+-   **동작 방식**: 여러 서버 간에 공유 자원에 대한 동시성 제어를 위해 사용하는 방식이다. (e.g., Redis, Zookeeper, MySQL) 서버나 DB가 분산되어 있을 때, 분산 환경에서 동시성 제어를 위해 사용한다.
+-   **장점**: 분산 환경에서 동시성 제어가 가능하며 높은 확장성을 제공한다.
+-   **단점**: 네트워크 지연이나 분산 시스템의 특성상 데이터 일관성을 보장하기 어렵고, 성능 저하가 발생할 수 있다.
+
+이부분은 Redis, Zookeeper, MySQL 3가지 방법으로 구현할 수 있다.
+
+![Redis Server](/images/tistory/22/redis_thread.png)
+
+1.  Redis를 이용한 분산 락 구현
+    -   Redis는 단일 쓰레드 방식으로 동작한다.
+        -   Redis가 6.0 부터 Thread I/O가 추가되면서 Multi Thread로 동작한다. 그러면 Redis는 Thread Safe한가? 라고 생각할 수 있지만 클라이언트로 부터 전송된 네트워크를 읽는 부분과 전송하는 부분은 Multi Thread로 구현되어있으며 redis에 요청한 명령을 실행하는 부분은 Single Thread로 구현되어 있기 때문에 Single Thread의 장점인 Atomic한 요청 처리가 가능한 것이다.
+2.  Zookeeper를 이용한 분산 락 구현
+    -   Kafka 등에서 활용되는 분산서버 관리 시스템으로, 각 클라이언트의 Session 및 Heartbeat 체킹 등의 서버 로직을 응용하여 고가용성을 보장한다. Lock의 성능보다 안정성이 매우 중요한 경우 고려할만한 방법이다. 그러나 ZooKeeper 자체가 많이 무겁고, 성능 튜닝을 위한 러닝커브가 있으며, 고가용성을 보장하기 위해서는 필연적으로 ZooKeeper를 Clustering 해야하므로 별도 인프라가 필요하며 많이 무겁다.
+3.  MySQL을 이용한 분산 락 구현
+    -   MySQL에서 제공하는 네임드 락(Named Lock)을 이용하여 분산 락을 구현할 수 있다. `GET_LOCK()` 함수를 이용하여 락을 획득하고, `RELEASE_LOCK()` 함수를 이용하여 락을 해제한다.
+        MySQL를 이미 DB로 사용하고 있다면 별도의 인프라가 필요없으며 러닝커브가 적다. DB가 분산된 경우 네임드락의 정보를 공유하고 동기화하는 문제의 난이도가 매우 높다.
+
+### 4\. 메시지 큐(Message Queue)
+
+-   **동작 방식**: 메시지 큐를 이용하여 요청을 순차적으로 처리하는 방식이다.
+-   **장점**: 요청을 순차적으로 처리하므로 동시성 문제가 발생하지 않으며, 높은 확장성을 제공한다.
+-   **단점**: 구현이 복잡하며, 메시지 큐의 설정, 모니터링, 실패 복구를 고려한 아키텍처 설계가 필요하다.
+
+순서가 보장되는 message queue를 사용하여 요청을 순차적으로 처리하면 동시성 문제를 해결할 수 있다.
+동시성 제어가 필요한 작업끼리 같은 큐에 넣어 처리를 해야하며 트랜잭션으로 묶을 수 없어 failover를 고려해야 한다.
+
+### 이번주차에서 사용할 제어 방식
+
+사실 동시성 제어하는 방법엔 캐시, REST TCC 등 다양한 제어 방법도 있지만 구현 복잡도가 올라가고 러닝커브가 높아진다고 생각해서 제외했다. 그리고 Message Queue를 도입하는 방식도 위와 같은 이유로 제외했다.이번 주차에선 별도의 인프라 구성이 필요없는 낙관적락 그리고 분산 환경을 고려한 분산락을 사용할 예정이다.
+분산락 구현을 위해 사용할 수 있는 인프라는 MySQL, Redis, Zookeeper가 있다.
+MySQL은 기존 DB가 MySQL일 경우 별도의 인프라구성이 필요없다는 장점이 있지만 DB가 분산환경일때 일관성 보장을 받기 어렵다는 단점이 있다.Zookeeper는 고가용성을 보장하기 위해 클러스터링이 필요하여 러닝커브가 높다는 단점이 있다.
+그래서 인프라구성이 어렵지 않으며 Redisson을 통해 쉽게 코드 구현이 가능한 Redis를 사용할 예정이다.
+[https://github.com/redisson/redisson](https://github.com/redisson/redisson)
+
+ [GitHub - redisson/redisson: Redisson - Valkey & Redis Java client. Complete Real-Time Data Platform. Sync/Async/RxJava/ReactiveRedisson - Valkey & Redis Java client. Complete Real-Time Data Platform. Sync/Async/RxJava/Reactive API. Over 50 Redis or Valkey based Java objects and services: Set, Multimap, SortedSet, Map, ...github.com](https://github.com/redisson/redisson)
+
+Lettuce가 아닌 Redisson을 사용하는 이유와 SpringBoot에서 Redis를 활용한 분산락 구현이 궁금하다면 [Spring Boot Redis를 활용한 분산 락 구현](https://penguin-dev.tistory.com/21)를 참고하자.
+
+## 콘서트 예약 시나리오 동시성 문제 해결 방안
+
+### 1\. 좌석 선점(예약)
+
+**시나리오**: 동일한 좌석의 예약 요청이 동시에 여러 요청으로 발생한다.문제: 좌석을 예약할 때 동일 좌석을 동시에 확인하고, '예약 가능'으로 판단하는 순간에 서로 다른 사용자가 해당 좌석을 차지하려고 시도하는 상황이 발생할 수 있다.**발생 가능성**: 높음**해결**: 낙관적락을 사용해 최초 좌석 점유 요청 외에는 exception 처리를 하여 중복 예약을 방지한다.**이유**: 하나의 좌석에는 한 명의 사용자만 예약할 수 있어야한다.
+그래서 동시성제어가 필요하다.
+해당 시나리오는 첫 번째 요청을 제외한 다른 요청은 실패를 해야하고 재시도를 하지 않아도 된다.
+비관적락과 분산락같은 경우 다른 요청들도 대기를 해야하기에 성능이 저하될 수 있으며 별도의 재시도 처리가 필요없어 낙관적락이 적합해보인다.**속도 비교 (비관적락 vs 낙관적락 vs 분산락)**동일좌석에 대한 요청이 10000건 발생
+
+![](/images/tistory/22/img.png)
+
+비관적락: 1484ms
+
+![](/images/tistory/22/img_1.png)
+
+낙관적락: 820ms
+
+![](/images/tistory/22/img_2.png)
+
+분산락: 6364ms낙관적락이 가장 빨랐고 분산락이 가장 느렸다. 분산락의 경우 Redisson을 사용했는데 Redisson은 Redis의 pub/sub 구조로 되어있다. 비관적 락처럼 DB connection을 유지하는 게아니라 계속 새로운 요청을 해야하기에 속도가 더 느린 것 같다. (확실하진 않다.)
+
+### 2\. 유저 포인트 충전
+
+**시나리오**: 한 사용자의 포인트 충전 요청이 동시에 여러 요청으로 발생한다.**문제**: 사용자가 포인트를 충전할 때 '현재 포인트 + 추가 포인트'로 업데이트할 때, 동시에 업데이트 요청이 들어오면 한쪽의 업데이트가 덮어쓰여져 잘못된 최종 포인트가 기록될 수 있다.**발생 가능성**: 낮음**해결**: 분산락을 사용하여 포인트 업데이트 요청을 순차적으로 처리한다. (분산 환경이 아니라면 비관적락을 사용해도 무방하다.)**이유**: 낙관적락은 충돌이 발생할 경우 롤백 후 재시도해야 하기 때문에 서버 부하가 증가할 수 있어 분산락을 사용하여 포인트 업데이트 요청을 순차적으로 처리한다.**속도 비교 (비관적락 vs 낙관적락 vs 분산락)**동일 유저의 포인트 충전 요청이 10000건 발생
+
+![](/images/tistory/22/img_3.png)
+
+비관적락: 825ms
+
+![](/images/tistory/22/img_4.png)
+
+낙관적락: 1863ms
+
+![](/images/tistory/22/img_5.png)
+
+분산락: 10296ms비관적락이 가장 빨랐고 분산락이 가장 느렸다. 낙관적락의 경우 충돌이 너무 발생해서 retry 제한을 10번으로 했을 경우에도 실패하였다. 낙관적락의 경우 retry를 많이하기에 애플리케이션부하가 증가할 수 있다. 포인트 충전의 경우 시나리오와 같은 많은 충돌이 발생하지 않을 것이라고 보이며 분산환경에선 분산락 아니라면 비관적락을 사용해야 할 것 같다.
+
+### 3\. 예약 내역 결제
+
+**시나리오**: 동일한 예약 내역에 대해 여러 결제 요청이 동시에 발생한다.**문제**: 예약 시스템에서 결제 요청이 동시에 발생했을 때, 결제가 중복 처리되어 사용자의 계좌에서 중복된 금액이 차감될 수 있다.발생 가능성: 낮음**해결**: 분산락을 사용하여 결제 요청을 순차적으로 처리한다.**이유**: 예약 내역 결제의 경우 포인트, 좌석, 예약 내역 등 여러 자원에 동시에 접근해야 한다. 낙관적락을 사용하기엔 포인트쪽에 충돌 발생 가능성이 높으며 retry를 많이 해야할 것 같다. 그래서 분산락을 사용하여 결제 요청을 순차적으로 처리한다.**속도 비교 (비관적락 vs 낙관적락 vs 분산락)**같은 사용자로 다른 예약 내역 결제 요청이 10000건 발생
+
+![](/images/tistory/22/img_6.png)
+
+비관적락: 747ms
+
+![](/images/tistory/22/img_7.png)
+
+낙관적락: 1353ms
+
+![](/images/tistory/22/img_8.png)
+
+분산락: 7095ms
+
+## 결론
+
+분산 환경이 아닐 경우 아직 트래픽이 많이 몰리지 않다고 생각할 수 있을 것 같다.
+그렇다면 DB를 활용한 비관적락을 사용해도 DB의 부하가 큰 트래픽이 아니여서 무관할 것 같고 분산락을 구현한다면 분산락의 의미와도 다르며 오버엔지어링이 이라고 생각한다. 그래서 분산 환경이 아닐 경우엔 비관적락과 낙관적락으로 동시성 제어를 할 것 같다.
+
+분산 환경일 경우는 비관적락을 사용을 안할 것 같다. 분산 환경으로 구성한 부분 부터 트래픽이 몰리는 걸 가정하였는데 비관적 락과 같이 DB에 부하를 주는 건 좋지 않은 패턴인 것 같다. 그리고 DB가 분산되어 있을 경우 비관적락으로 인한 제어는 매우 어렵다고 생각한다.
+그래서 분산락을 도입을 고려해야한다. 분산락을 활용해서 분산 서버 분산 DB 환경에서 동시성을 제어하는 패턴으로 가며 충돌이 많지 않거나 재시도가 필요없는 작업은 낙관적락을 활용할 것 같다.
+
+이번 콘서트 시나리오는 대용량 트래픽을 고려한 시나리오이다. 그래서 분산 환경에 대한 고려를 하면서 개발을 진행하고 있어 분산 락과 낙관적락만 사용해서 구현해야할 것 같다.
+동시성 문제가 발생하는 좌석 선점은 재시도가 필요없는 usecase다 보니 낙관적락을 사용하고 포인트 충전 과 예약 내역 결제 usecase는 분산락을 통해 순차적으로 처리될 수 있도록 락을 제어하며 낙관적도 같이 활용해서 혹시나 모를 데이터 오염을 방지할 것 같다. 낙관적 락을 사용할 거면 재시도도 같이 고려를 해야되는데 분산락을 사용한 환경에서 충돌이 발생한 경우는 오류이기때문에 별도의 재시도 없이 해당 문제를 고치는 방향으로 갈 것 같다.
+
+## 참고 링크
+
+-   [Redis - 정말 싱글스레드일까?](https://velog.io/@hope1213/Redis-%EC%A0%95%EB%A7%90-%EC%8B%B1%EA%B8%80%EC%8A%A4%EB%A0%88%EB%93%9C%EC%9D%BC%EA%B9%8C)
+-   [동시성 문제 해결 전략 - 스프링으로 구현한 TCC패턴](https://brewagebear.github.io/concurrency-distributed-transaction-with-tcc/)
+-   [Zookeeper : Internals and Distributed Locking](https://medium.com/@aroragarima/zookeeper-internals-and-distributed-locking-158a6450691b)
+-   [Redisson](https://github.com/redisson/redisson)

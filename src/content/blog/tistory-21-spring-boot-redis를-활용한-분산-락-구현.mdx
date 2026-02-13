@@ -1,0 +1,353 @@
+---
+title: "Spring Boot Redis를 활용한 분산 락 구현"
+description: "동시성 제어에는 여러 기법이 있다. 이전에는 비관적 락과 낙관적 락을 사용해 동시성 제어를 구현했지만, 이번에는 Redis를 이용한 분산 락을 다루어보자. 비관적 락과 낙관적 락에 대해 더 알고 싶다면 JPA 비관적 락과 낙관적 락 및 재시도를 참고하면 된다. 분산 락은 여러 서버와 데이터베이스 환경에서 동시성 제어를 위해 사용된다. 단일 DB 환경에서는"
+publishDate: 2024-10-30
+category: "Backend Development"
+tags: ["Concurrency", "Java", "Spring Boot", "Redis"]
+draft: false
+source: "tistory"
+originalUrl: "https://penguin-dev.tistory.com/21"
+---
+
+![](/images/tistory/21/img.png)
+
+## 개요
+
+동시성 제어에는 여러 기법이 있다. 이전에는 비관적 락과 낙관적 락을 사용해 동시성 제어를 구현했지만, 이번에는 Redis를 이용한 분산 락을 다루어보자. 비관적 락과 낙관적 락에 대해 더 알고 싶다면 [JPA 비관적 락과 낙관적 락 및 재시도](https://penguin-dev.tistory.com/19)를 참고하면 된다.
+
+## 분산 락
+
+분산 락은 여러 서버와 데이터베이스 환경에서 동시성 제어를 위해 사용된다. 단일 DB 환경에서는 비관적 락과 낙관적 락으로 충분히 동시성 제어가 가능하지만, 여러 DB가 분산된 환경에서는 성능 저하, Deadlock, 복제본 일관성 문제가 발생할 수 있어 분산 락이 필요하다.
+
+### 분산 락 구현 방법
+
+분산 락을 구현하는 방식은 여러 가지가 있다.
+
+1.  **Redis를 이용한 분산 락 구현**: SETNX 사용
+2.  **Zookeeper를 이용한 분산 락 구현**
+3.  **MySQL을 이용한 분산 락 구현**: Named Lock
+
+## Redis란?
+
+Redis는 메모리 기반의 Key-Value 데이터 관리 시스템으로, Remote Dictionary Server의 약자다. 단일 스레드 방식으로 동작하며 데이터를 메모리에 저장해 조회 속도가 매우 빠르다. DB, 캐시, 분산 락, 메시지 큐, 공유 메모리 등 다양한 용도로 사용된다. Redis에 대한 자세한 내용은 이후에 다루도록 하겠다.
+
+### Redis 기반 분산 락의 장점
+
+Redis는 인프라 구성이 간단하고 빠르게 설정할 수 있으며 분산 락 구현 시 많이 활용된다. 특히, SPOF(Single Point of Failure) 문제를 고려해 Redis를 다중화하면 Redis 자체가 분산 락을 전담하여 다른 인프라에 영향받지 않고 안정적인 동시성 제어가 가능하다.
+
+### Redis를 이용한 분산 락 구현
+
+Redis 인스턴스 구성에 따라 락 구현 방식이 달라질 수 있다. 단일 인스턴스에서는 기본적인 SETNX 명령어를 사용하고, 다중 인스턴스 환경에서는 Redlock 알고리즘을 적용할 수 있다. 이번엔 단일 인스턴스에 대해서만 다루도록 하겠다.
+
+#### SETNX 사용법
+
+Redis에서 `SET key value` 명령어는 주어진 key-value 데이터를 저장한다. 이때, 기존에 해당 키가 있으면 새 값으로 덮어씌워진다.
+
+```
+> SET key1 value1
+OK
+> SET key1 value2
+OK
+> GET key1
+"value2"  # 마지막에 저장된 값만 조회됨
+```
+
+하지만 `SETNX`는 키가 존재하지 않을 때에만 작동하여 기존 키가 있으면 false를 반환한다. 이 특성을 활용해 특정 문자열을 key로, 임의의 해시값을 value로 설정해 락을 점유할 수 있다. 이후 동일한 key로 SETNX를 시도한 다른 클라이언트는 false를 반환받아 락 획득에 실패하게 된다.
+
+```vbnet
+> SETNX key2 value1
+(integer) 1  # 성공
+> SETNX key2 value2
+(integer) 0  # false 반환
+> GET key2
+"value1"  # 처음 입력된 값이 유지됨
+```
+
+이 방식을 활용해 락을 점유한 클라이언트만 key 삭제가 가능하도록 해 통제권을 부여할 수 있다. 작업을 마친 클라이언트가 락을 반환하면, 다음 SETNX 성공 클라이언트가 락을 점유하게 되어 동시성 제어가 순차적으로 이루어진다.
+
+#### Simple Lock
+
+Redis Lock을 구현한 방식으로 심플 락(Simple Lock)이 있다.
+심플락은 key 선점에 의한 lock 획득 실패 시 비지니스 로직을 수행하지 않도록 처리한다.
+
+```actionscript
+var 락 획득 성공 = 락 획득 요청
+if (락 획득 성공) {
+    try {
+        작업 수행
+    } finally {
+        락 반환
+    }
+} else {
+    throw 락 획득 실패 처리
+}
+```
+
+#### Spin Lock
+
+Redis Lock을 구현한 방식으로 스핀 락(Spin Lock)이 있다.
+스핀 락은 루프를 돌면서 락을 획득할 때까지 계속 요청을 하게되는 방식이다. 이 방식은 Redis에 대한 요청이 많아질 경우 Redis에 부하를 줄 수 있으므로 주의해야 한다.
+
+```kotlin
+재시도 횟수 = 3
+
+while (재시도 횟수--) {
+    락 획득 성공 = 락 획득 요청
+    if (락 획득 성공) {
+        try {
+            작업 수행
+        } finally {
+            락 반환
+        }
+        break
+    }
+}
+
+```
+
+#### Pub/Sub
+
+Redis Lock을 구현한 방식으로 Pub/Sub 방식이 있다.
+Pub/Sub 방식은 락이 해제될 때마다 subscribe한 클라이언트에게 락이 해제되었음을 알려주는 방식이다.
+해당 알림은 받은 클라이언트는 다시 락을 획득하려고 시도하게 된다.
+이로인해 스핀락에 비해 요청하는 횟수가 줄어 Redis에 부하를 줄일 수 있다.
+
+```kotlin
+락 획득 성공 = 락 획득 요청
+
+if (락 획득 성공) {
+    try {
+        작업 수행
+    } finally {
+        락 반환
+    }
+} else {
+    해당 채널 구독
+}
+
+while (락해제 메시지 수신) {
+    락 획득 성공 = 락 획득 요청
+    if (락 획득 성공) {
+        try {
+            작업 수행
+        } finally {
+            락 반환
+        }
+        break
+    }
+}
+```
+
+## Spring Boot Redis를 활용한 분산 락 구현
+
+Spring Boot에서 Redis를 활용하기 위해 Lettuce나 Redisson을 사용할 수 있다.Lettuce는 공식적으로 분산락 기능을 지원하지 않아 직접 구현해서 사용해야 한다.
+그리고 Lettuce의 락 획득 방식은 스핀락(Spin Lock) 방식이다.Redisson은 pub/sub 방식을 지원하며 RLock이라는 인터페이스를 통해 쉽게 분산 락을 구현할 수 있다.
+
+### STEP 1. Redisson 의존성 추가
+
+spring boot 버전에 맞는 Redisson 의존성을 추가한다.
+[https://redisson.org/docs/integration-with-spring/#spring-boot-starter](https://redisson.org/docs/integration-with-spring/#spring-boot-starter)
+
+ [Integration with Spring - Redisson Reference GuideIntegration with Spring Spring Boot Starter Integrates Redisson with Spring Boot library. Depends on Spring Data Redis module. Supports Spring Boot 1.3.x - 3.3.x Usage 1. Add redisson-spring-boot-starter dependency into your project: Maven org.redisson redredisson.org](https://redisson.org/docs/integration-with-spring/#spring-boot-starter)
+
+```isbl
+dependencies {
+    implementation("org.redisson:redisson-spring-boot-starter:3.37.0")
+}
+```
+
+### STEP 2. Redisson 설정
+
+RedissonClient를 사용하기 위해 Config 설정을 빈으로 등록합니다.
+
+```crystal
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class RedissonConfig {
+
+  private static final String REDISSON_HOST_PREFIX = "redis://";
+
+  @Value("${spring.data.redis.host}")
+  private String redisHost;
+  @Value("${spring.data.redis.port}")
+  private int redisPort;
+
+  @Bean
+  public RedissonClient redissonClient() {
+    RedissonClient redisson = null;
+    Config config = new Config();
+    config.useSingleServer().setAddress(REDISSON_HOST_PREFIX + redisHost + ":" + redisPort);
+    redisson = Redisson.create(config);
+    return redisson;
+  }
+
+}
+```
+
+### STEP 3. Redisson 분산 락 사용
+
+[https://helloworld.kurly.com/blog/distributed-redisson-lock/](https://helloworld.kurly.com/blog/distributed-redisson-lock/)
+
+ [풀필먼트 입고 서비스팀에서 분산락을 사용하는 방법 - Spring Redisson어노테이션 기반으로 분산락을 사용하는 방법에 대해 소개합니다.helloworld.kurly.com](https://helloworld.kurly.com/blog/distributed-redisson-lock/)
+
+해당 내용과 같이 AOP를 사용하여 기존 비즈니스 로직의 오염 없이 분산 락을 사용할 수 있다.
+하지만 Propagation.REQUIRES\_NEW 으로 설정할 경우 동시에 여러 요청이 들어왔을 때 Connection Pool이 부족하여 Deadlock이 발생할 수 있으므로 주의해야 하며 트랜잭션이 독립적이기에 failover를 고려해야 한다.
+상황애따라 Propagation 속성을 관리할 수 있도록 구조를 잡아보겠다.그래서 우선 RedissonLockManager를 이용해 직접 분산 락을 사용하는 방법을 알아보자.
+
+```
+import java.util.function.Supplier;
+
+public interface LockManager {
+
+  Object lock(String lockName, Supplier<Object> operation) throws Throwable;
+
+}
+```
+
+Lock을 담당하는 인터페이스다. 락의 구현체가 달라질 수 있으므로 인터페이스로 추상화한다.
+
+```java
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+@Component
+public class RedissonLockManager {
+
+  private static final long WAIT_TIME = 5L;
+  private static final long LEASE_TIME = 3L;
+  private static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;
+  private final RedissonClient redissonClient;
+
+  public RedissonLockManager(RedissonClient redissonClient) {
+    this.redissonClient = redissonClient;
+  }
+
+  @Transactional(propagation = Propagation.NEVER)
+  @Override
+  public Object lock(String lockName, Supplier<Object> operation) throws Throwable {
+    RLock rLock = redissonClient.getLock(lockName);
+
+    try {
+      boolean available = rLock.tryLock(WAIT_TIME, LEASE_TIME, TIME_UNIT);
+
+      if (!available) {
+        throw new IllegalStateException("Failed to acquire lock");
+      }
+
+      return operation.get();
+    } catch (InterruptedException e) {
+      throw new InterruptedException();
+    } finally {
+      try {
+        rLock.unlock();
+      } catch (IllegalMonitorStateException e) {
+      }
+    }
+  }
+}
+
+```
+
+RedissonLockManager는 LockManager를 구현한 클래스로, RedissonClient를 주입받아 락을 획득하고 해제하는 기능을 수행한다.
+`@Transactional(propagation = Propagation.NEVER)`은 트랜잭션을 사용하지 않음과 동시에 선행 트랜잭션이 존재하면 오류를 발생시키는 옵션이다.
+해당 옵션을 통해 트랜잭션 사용전에 락 획득을 강제한다.
+
+```crystal
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface DistributedLock {
+
+  DistributedLockType type();
+
+  String[] keys();
+
+}
+```
+
+AOP를 활용하기 위해 분산락 어노테이션을 만들었다.
+DistributedLockType은 락의 종류를 나타내며 keys는 배열로 받게하여 복합키에 대한 락을 대응했다.
+
+```livescript
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
+@RequiredArgsConstructor
+public class DistributedLockAop {
+
+  private final LockManager lockManager;
+
+  @Around("@annotation(distributedLock)")
+  public Object lock(ProceedingJoinPoint joinPoint, DistributedLock distributedLock)
+      throws Throwable {
+    String dynamicKey = createDynamicKey(joinPoint, distributedLock.keys());
+    String lockName = distributedLock.type().lockName() + ":" + dynamicKey;
+
+    return lockManager.lock(lockName, () -> {
+      try {
+        return joinPoint.proceed();
+      } catch (RuntimeException | Error e) {
+        throw e;
+      } catch (Throwable e) {
+        throw new RuntimeException(e);
+      }
+    });
+
+  }
+
+  private String createDynamicKey(ProceedingJoinPoint joinPoint, String[] keys) {
+    MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+    String[] methodParameterNames = methodSignature.getParameterNames();
+    Object[] methodArgs = joinPoint.getArgs();
+
+    return Arrays.stream(keys)
+        .map(key -> {
+          int indexOfKey = Arrays.asList(methodParameterNames).indexOf(key);
+          if (indexOfKey == -1 || methodArgs[indexOfKey] == null) {
+            throw new IllegalArgumentException("Key not found or null");
+          }
+          return methodArgs[indexOfKey].toString();
+        })
+        .collect(Collectors.joining(":"));
+  }
+
+}
+
+```
+
+`@Order(Ordered.HIGHEST_PRECEDENCE + 1)`를 활용하여 트랜잭션보다 먼저 실행되도록 설정했다.
+`@Around("@annotation(distributedLock)")`을 통해 분산락 어노테이션이 붙은 메소드에 대해 락을 획득하도록 설정했다.
+
+## 참고 링크
+
+-   [레디스를 활용한 분산 락(Distrubuted Lock) feat lettuce, redisson](https://0soo.tistory.com/256)
+-   [\[Redis\] 레디스 알고 쓰자. - 정의, 저장방식, 아키텍처, 자료구조, 유효 기간](https://velog.io/@banggeunho/%EB%A0%88%EB%94%94%EC%8A%A4Redis-%EC%95%8C%EA%B3%A0-%EC%93%B0%EC%9E%90.-%EC%A0%95%EC%9D%98-%EC%A0%80%EC%9E%A5%EB%B0%A9%EC%8B%9D-%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98-%EC%9E%90%EB%A3%8C%EA%B5%AC%EC%A1%B0-%EC%9C%A0%ED%9A%A8-%EA%B8%B0%EA%B0%84)
+-   [Redis 분산 락을 활용한 동시성 처리](https://miintto.github.io/docs/distributed-lock)
+-   [풀필먼트 입고 서비스팀에서 분산락을 사용하는 방법 - Spring Redisson](https://helloworld.kurly.com/blog/distributed-redisson-lock/)
+-   [\[Spring\] Redisson 분산락 AOP로 동시성 문제 해결하기 (트랜잭션 전파속성 NEVER 사용)](https://gengminy.tistory.com/59)

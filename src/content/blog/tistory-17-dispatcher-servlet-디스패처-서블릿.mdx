@@ -1,0 +1,49 @@
+---
+title: "Dispatcher Servlet (디스패처 서블릿)"
+description: "필터(Filter)와 인터셉터(Interceptor)에 대해 알아보다가 디스패처 서블릿(Dispatcher Servlet)을 한 번 짚고 가면 좋을 것 같아 작성하게 되었다. 서블릿은 클라이언트의 요청을 처리하고 그 결과를 반환하는 자바 웹 프로그래밍 기술로, Servlet 클래스의 구현 규칙을 따르게 된다. 서블릿은 웹 서버에서 동작하며, 클라이언트의 요"
+publishDate: 2024-10-21
+category: "Backend Development"
+tags: ["Spring Boot", "Java"]
+draft: false
+source: "tistory"
+originalUrl: "https://penguin-dev.tistory.com/17"
+---
+
+![](./img/DALL·E 2024-10-21 23.41.30 - A clean and minimalistic image representing a Dispatcher Servlet in a Spring MVC framework. The design should include a central server icon that symbo.webp)
+
+## 개요
+
+필터(Filter)와 인터셉터(Interceptor)에 대해 알아보다가 디스패처 서블릿(Dispatcher Servlet)을 한 번 짚고 가면 좋을 것 같아 작성하게 되었다.
+
+### 서블릿(Servlet)
+
+서블릿은 클라이언트의 요청을 처리하고 그 결과를 반환하는 자바 웹 프로그래밍 기술로, Servlet 클래스의 구현 규칙을 따르게 된다.
+서블릿은 웹 서버에서 동작하며, 클라이언트의 요청을 받아 처리하고 그 결과를 다시 클라이언트에게 전송하는 역할을 한다. (자세한 내용은 다음에 다루겠다.)
+
+### 디스패처 서블릿(Dispatcher Servlet)
+
+디스패처 서블릿은 Servlet의 일종이다. 'dispatcher'라는 단어는 '보내다'라는 의미를 가지고 있으며, HTTP 프로토콜로 들어오는 모든 요청을 가장 앞에서 받아서 컨트롤러에 전달하는 프론트 컨트롤러(Front Controller) 역할을 한다.클라이언트로부터 요청이 들어오면, 웹 컨테이너(예: Tomcat)가 해당 요청을 받는다.
+이후, 웹 컨테이너는 모든 요청을 프론트 컨트롤러인 디스패처 서블릿에게 전달한다.
+디스패처 서블릿은 공통적인 작업을 처리한 후에 적절한 컨트롤러에게 요청을 전달하며, 이를 통해 MVC 패턴에서 중요한 역할을 수행한다.
+
+> **프론트 컨트롤러(Front Controller)**: 서버로 들어오는 모든 요청을 받아서 처리하는 컨트롤러로, 보통 서블릿 컨테이너의 최전방에서 요청을 처리한다. 이는 MVC 구조와 함께 사용되는 디자인 패턴이다.
+
+### Dispatcher Servlet 동작 방식
+
+![](/images/tistory/17/Spring Dispatcher Servlet.png)
+
+![](/images/tistory/17/image (2).png)
+
+1.  클라이언트의 요청을 디스패처 서블릿이 받는다.
+2.  요청 정보를 바탕으로 해당 요청을 처리할 컨트롤러를 찾는다. (HandlerMapping)
+3.  요청을 위임할 핸들러 어댑터를 찾아 전달한다.
+4.  핸들러 어댑터가 컨트롤러로 요청을 전달한다.
+5.  컨트롤러는 비즈니스 로직을 처리한다.
+6.  컨트롤러가 처리 결과를 반환한다.
+7.  핸들러 어댑터가 반환값을 처리한다.
+8.  서버는 클라이언트에게 응답을 반환한다.
+
+## 참고 링크
+
+-   [\[Spring\] Dispatcher-Servlet(디스패처 서블릿)이란? 디스패처 서블릿의 개념과 동작 과정](https://mangkyu.tistory.com/18)
+-   [\[Spring\] ? Dispatcher Servlet 이해하기](https://velog.io/@betterfuture4/Spring-Dispatcher-Servlet-%EC%A0%95%EB%A6%AC)

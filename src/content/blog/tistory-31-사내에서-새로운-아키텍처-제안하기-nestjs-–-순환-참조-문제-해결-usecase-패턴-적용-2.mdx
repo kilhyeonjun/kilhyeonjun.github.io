@@ -1,0 +1,445 @@
+---
+title: "사내에서 새로운 아키텍처 제안하기 (NestJS) – 순환 참조 문제 해결 & UseCase 패턴 적용 (2)"
+description: "기존 Layered Architecture의 문제점을 해결하기 위해 UseCase 패턴을 적용하여 Application Layer를 추가한 구조를 제안합니다.✅ 핵심 개선점: - 서비스 간 직접 호출을 제거하고, UseCase 단위로 비즈니스 로직을 모듈화 - Application Layer를 추가하여 비즈니스 로직을 분리하고, 서비스 간 결합도를 낮춤 -"
+publishDate: 2025-02-25
+category: "Architecture & Design"
+tags: ["Architecture", "NestJS"]
+series:
+  name: "사내 아키텍처 개선기"
+  order: 2
+draft: false
+source: "tistory"
+originalUrl: "https://penguin-dev.tistory.com/31"
+---
+
+## **? 3. 제안된 신규 아키텍처**
+
+### **1️⃣ 개선된 아키텍처 개요**
+
+![](/images/tistory/31/clean-architecture.png)
+
+기존 Layered Architecture의 문제점을 해결하기 위해 **UseCase 패턴을 적용하여 Application Layer를 추가**한 구조를 제안합니다.✅ **핵심 개선점:**
+
+-   **서비스 간 직접 호출을 제거하고, UseCase 단위로 비즈니스 로직을 모듈화**
+-   **Application Layer를 추가하여 비즈니스 로직을 분리하고, 서비스 간 결합도를 낮춤**
+-   **순환 참조 문제를 방지하고, 테스트 가능성을 높임**
+
+---
+
+#### **? 기존 아키텍처 vs. 개선된 아키텍처 비교**
+
+항목 기존 Layered Architecture 개선된 아키텍처 (UseCase 패턴 적용)
+
+**비즈니스 로직 위치**
+
+Service Layer에 집중됨
+
+UseCase 단위로 분리
+
+**의존성 관리**
+
+서비스 간 직접 참조 많음
+
+Application Layer 추가하여 단방향 유지
+
+**순환 참조 문제**
+
+자주 발생
+
+구조적으로 방지됨
+
+**테스트 용이성**
+
+서비스 간 의존성이 높아 어려움
+
+UseCase 단위 테스트 가능
+
+---
+
+### **2️⃣ 개선된 구조 (UseCase 패턴 적용 – 단방향 의존성 유지)**
+
+![](/images/tistory/31/제안된아키텍처.png)
+
+이미지 출처: [(레거시 시스템) 개편의 기술 - 배달 플랫폼에서 겪은 N번의 개편 경험기 | 인프콘 2022](https://youtu.be/HNt3H_7muHs?feature=shared&t=763)
+
+**✨ 개선된 점:**
+✔ **Application Layer 추가 → 서비스 간 직접 호출 제거**
+✔ **의존성 흐름이 단방향으로 유지됨**
+✔ **각 UseCase는 독립적으로 테스트 가능**
+
+---
+
+### **3️⃣ 개선된 코드 예시 – 하나의 UseCase에서 postRepository와 userRepository를 호출**
+
+이제 PostService가 UserService를 직접 호출하는 것이 아니라,
+**Application Layer에서 하나의 UseCase 내에서 postRepository와 userRepository를 함께 호출**하도록 변경하겠습니다.
+
+#### **? 개선된 코드 예시 – UseCase 패턴 적용 (UserRepository & PostRepository 호출)**
+
+```typescript
+// UseCase를 활용하여 Post 생성 로직을 처리
+@Injectable()
+export class CreatePostUseCase {
+  constructor(
+    private readonly postRepository: PostRepository,
+    private readonly userRepository: UserRepository, // 두 개의 Repository를 직접 호출
+  ) {}
+
+  async execute(command: CreatePostCommand): Promise<Post> {
+    // 1. 유저 정보 조회
+    const user = await this.userRepository.findById(command.userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    // 2. 새로운 게시글 생성
+    return await this.postRepository.create({
+      userId: command.userId,
+      content: command.content,
+    });
+  }
+}
+
+// Command 객체 정의
+export class CreatePostCommand {
+  constructor(
+    public readonly userId: number,
+    public readonly content: string,
+  ) {}
+}
+
+```
+
+---
+
+#### **✅ 개선된 코드의 핵심 변화**
+
+✔ PostService가 UserService를 직접 호출하는 대신, **UseCase 내에서 userRepository와 postRepository를 함께 호출**
+✔ 서비스 간 직접 의존성을 제거하고, **Application Layer에서 모든 비즈니스 로직을 처리**
+✔ UseCase 단위로 분리되어 **테스트가 용이함**
+
+---
+
+### **4️⃣ 기존 Layered Architecture와의 비교**
+
+비교 항목 기존 Layered Architecture 개선된 아키텍처 (UseCase 패턴 적용)
+
+**비즈니스 로직 위치**
+
+Service Layer에 집중됨
+
+Application Layer의 UseCase로 분리
+
+**의존성 관리**
+
+서비스 간 직접 참조
+
+Application Layer 추가하여 단방향 유지
+
+**순환 참조 문제**
+
+자주 발생
+
+구조적으로 방지됨
+
+**테스트 용이성**
+
+서비스 간 의존성이 많아 어려움
+
+UseCase 단위로 테스트 가능
+
+---
+
+### **? 결론 – 새로운 아키텍처를 도입하면?**
+
+✅ **순환 참조 문제 해결** → 서비스 간 직접 참조 제거
+✅ **비즈니스 로직이 UseCase 단위로 분리** → 유지보수 용이
+✅ **각 UseCase가 독립적으로 동작** → 단위 테스트 가능
+✅ **Application Layer 추가하여 단방향 의존성 유지**
+
+---
+
+## **? 4. 현실적인 적용 전략**
+
+아키텍처 개선이 필요하다고 해서 **바로 전체 프로젝트를 새로운 구조로 변경할 수는 없습니다.**
+✅ 기존 코드와의 호환성 유지
+✅ 운영 중인 서비스에 영향을 최소화
+✅ 팀원들이 자연스럽게 새로운 구조를 익힐 수 있도록 적용이러한 점을 고려하여, **신규 아키텍처를 현실적으로 적용할 수 있는 단계별 전략**을 제안합니다.
+
+---
+
+### **1️⃣ 신규 도메인부터 적용 – 점진적 도입 방식**
+
+가장 현실적인 방법은 **기존 코드 전체를 한 번에 리팩토링하는 것이 아니라, 새로운 기능(도메인)부터 새로운 아키텍처를 적용하는 것**입니다.✅ **신규 도메인**(예: 새로운 게시판 기능) → **UseCase 패턴을 적용하여 개발**
+✅ 기존 코드와 독립적인 기능부터 적용하여 **리스크 최소화**
+✅ 개발자들이 **새로운 구조에 익숙해질 수 있는 기간 확보**
+
+#### **? 적용 예시**
+
+예를 들어, 기존 코드에서 PostService가 UserService를 직접 호출하고 있었다면,
+새로운 기능에서는 **Application Layer를 추가하여 UseCase 패턴을 적용**하는 방식으로 개발합니다.
+
+```typescript
+@Injectable()
+export class CreatePostUseCase {
+  constructor(
+    private readonly postRepository: PostRepository,
+    private readonly userRepository: UserRepository,
+  ) {}
+
+  async execute(command: CreatePostCommand): Promise<Post> {
+    const user = await this.userRepository.findById(command.userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    return await this.postRepository.create({
+      userId: command.userId,
+      content: command.content,
+    });
+  }
+}
+
+```
+
+이러한 방식으로 **기존 Layered Architecture를 유지하면서 새로운 기능에 UseCase 패턴을 적용**할 수 있습니다.
+
+---
+
+### **2️⃣ 기존 도메인 점진적 개선 – 기능 변경 시 리팩토링 적용**
+
+완전히 새로운 기능이 아닌, **기존 기능을 수정해야 할 경우에도 점진적으로 새로운 구조를 도입하는 전략이 필요**합니다.
+✅ 기존 기능을 그대로 두되, 기능 변경이 필요한 부분부터 UseCase 패턴을 적용
+✅ 코드 변경을 최소화하여 **운영 중인 서비스에 영향을 줄 가능성을 낮춤**
+✅ 기존 구조와 새로운 구조가 **혼합된 상태에서도 안정적으로 운영할 수 있도록 관리**
+
+#### **? 적용 예시**
+
+1️⃣ 기존 구조 유지
+
+```typescript
+@Injectable()
+export class PostService {
+  constructor(private readonly userService: UserService) {}
+
+  async createPost(userId: number, content: string): Promise<Post> {
+    const user = await this.userService.getUserById(userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    return await this.postRepository.create({ userId, content });
+  }
+}
+
+```
+
+2️⃣ 기능 변경이 필요한 경우 UseCase 패턴 적용
+
+```typescript
+@Injectable()
+export class CreatePostUseCase {
+  constructor(
+    private readonly postRepository: PostRepository,
+    private readonly userRepository: UserRepository,
+  ) {}
+
+  async execute(command: CreatePostCommand): Promise<Post> {
+    const user = await this.userRepository.findById(command.userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    return await this.postRepository.create({ userId: command.userId, content: command.content });
+  }
+}
+
+```
+
+이 방식으로 점진적인 전환이 가능하며, **일부 기능이 새로운 구조로 전환되더라도 기존 구조와 함께 운영이 가능합니다.**
+
+---
+
+### **3️⃣ 비용과 리스크 최소화 – 팀 내 공유 & 코드 리뷰 강화**
+
+아키텍처를 변경할 때 **기술적 리스크뿐만 아니라, 팀원들의 협업 방식에도 영향을 줍니다.**
+✅ **팀원들과 충분한 논의를 거친 후, 점진적으로 도입**
+✅ 신규 구조에 대한 **공유 세션 진행 & 코드 리뷰 강화**
+✅ 운영 중인 서비스에 영향을 주지 않도록 **테스트 코드 철저히 작성**
+
+**? 현실적인 팀 내 적용 전략**1️⃣ **기술 세미나 & 내부 문서 공유**
+
+-   신규 구조에 대한 문서화 진행
+-   팀원들이 새로운 구조를 이해할 수 있도록 공유 세션 진행
+
+2️⃣ **코드 리뷰를 통해 점진적으로 적용**
+
+-   기존 구조를 유지하면서 새로운 아키텍처를 부분적으로 적용
+-   점진적으로 적용된 코드에 대한 코드 리뷰를 통해 자연스럽게 팀원들이 익숙해질 수 있도록 유도
+
+3️⃣ **테스트 코드 작성 철저히 하기**
+
+-   UseCase 단위 테스트를 강화하여 안정성 확보
+-   리팩토링 후 기존 기능이 정상적으로 동작하는지 확인할 수 있도록 테스트 코드 추가
+
+---
+
+### **? 결론 – 현실적인 도입 전략을 따른다면?**
+
+✅ **신규 도메인부터 적용하여 리스크 최소화**
+✅ **기존 도메인은 기능 변경 시 점진적으로 리팩토링**
+✅ **팀원들과 논의를 거쳐 협업 방식에 적응할 수 있도록 지원**
+
+---
+
+## **? 5. 최종 아키텍처 구조**
+
+앞서 제안한 **UseCase 패턴을 적용한 개선된 아키텍처**를 기반으로,
+최종적으로 적용할 **계층 구조**를 정리했습니다.
+
+---
+
+### **1️⃣ 최종 아키텍처 계층 구조**
+
+위 그림처럼, **Application Layer를 추가하여 비즈니스 로직을 UseCase로 분리**하고,
+서비스 간 의존성을 단방향으로 유지하는 구조를 최종적으로 적용했습니다.
+
+---
+
+### **2️⃣ 각 계층별 역할 및 책임**
+
+#### **? 1. Presentation Layer (표현 계층) – 컨트롤러 (Controller)**
+
+✅ 클라이언트 요청을 받아 처리
+✅ Application Layer에 UseCase 실행 요청
+✅ 요청 데이터를 검증하고, 응답 데이터를 변환? **구성 요소:**
+
+-   Controller (API 요청 처리)
+-   Consumer (이벤트 기반 메시지 처리)
+
+```javascript
+@Controller('posts')
+export class PostController {
+  constructor(private readonly createPostUseCase: CreatePostUseCase) {}
+
+  @Post()
+  async createPost(@Body() createPostDto: CreatePostDto) {
+    return await this.createPostUseCase.execute(createPostDto);
+  }
+}
+
+```
+
+---
+
+#### **? 2. Application Layer (응용 계층) – UseCase (비즈니스 로직 담당)**
+
+✅ 비즈니스 로직을 캡슐화
+✅ 데이터베이스 접근을 직접 하지 않고, Repository를 통해 접근
+✅ 하나의 UseCase는 하나의 주요 기능을 담당? **구성 요소:**
+
+-   UseCase (비즈니스 로직 처리)
+-   Command (입력 데이터를 객체화)
+
+```typescript
+@Injectable()
+export class CreatePostUseCase {
+  constructor(
+    private readonly postRepository: PostRepository,
+    private readonly userRepository: UserRepository,
+  ) {}
+
+  async execute(command: CreatePostCommand): Promise<Post> {
+    const user = await this.userRepository.findById(command.userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    return await this.postRepository.create({
+      userId: command.userId,
+      content: command.content,
+    });
+  }
+}
+
+```
+
+---
+
+#### **? 3. Domain Layer (도메인 계층) – 엔티티 (Entity) 및 도메인 로직**
+
+✅ 핵심 비즈니스 규칙 정의
+✅ Entity와 Value Object를 통해 도메인 모델을 표현? **구성 요소:**
+
+-   Entity (데이터 모델)
+-   Domain Service (도메인 로직 처리)
+
+```typescript
+export class Post {
+  constructor(
+    public readonly id: number,
+    public readonly userId: number,
+    public readonly content: string,
+  ) {
+    if (!content || content.length < 5) {
+      throw new Error('Post content must be at least 5 characters long.');
+    }
+  }
+}
+
+```
+
+---
+
+#### **? 4. Infrastructure Layer (인프라 계층) – 데이터 저장 및 외부 시스템 연동**
+
+✅ 데이터베이스 및 외부 API와의 통신 담당
+✅ Repository를 통해 영속성 로직을 캡슐화? **구성 요소:**
+
+-   Repository (데이터 접근 계층)
+-   External Service (외부 API 호출)
+
+```typescript
+@Injectable()
+export class PostRepository {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findByUserId(userId: number): Promise<Post[]> {
+    return this.prisma.post.findMany({ where: { userId } });
+  }
+
+  async create(post: { userId: number; content: string }): Promise<Post> {
+    return this.prisma.post.create({ data: post });
+  }
+}
+
+```
+
+---
+
+### **3️⃣ 기존 Layered Architecture와 최종 구조 비교**
+
+비교 항목 기존 Layered Architecture 최종 적용된 아키텍처
+
+**비즈니스 로직 위치**
+
+Service Layer에 집중됨
+
+Application Layer의 UseCase로 분리
+
+**의존성 관리**
+
+서비스 간 직접 참조
+
+UseCase를 통해 단방향 의존성 유지
+
+**순환 참조 문제**
+
+자주 발생
+
+구조적으로 방지됨
+
+**테스트 용이성**
+
+서비스 간 의존성이 높아 어려움
+
+UseCase 단위로 테스트 가능
+
+---
+
+### **? 결론 – 최종 아키텍처를 도입하면?**
+
+✅ **서비스 간 직접 호출을 제거하고, UseCase 단위로 비즈니스 로직을 모듈화**
+✅ **Application Layer를 추가하여 비즈니스 로직을 분리하고, 서비스 간 결합도를 낮춤**
+✅ **순환 참조 문제를 방지하고, 테스트 가능성을 높임**
+✅ **각 계층이 명확한 역할을 가지도록 구조를 정리하여 유지보수 용이**
