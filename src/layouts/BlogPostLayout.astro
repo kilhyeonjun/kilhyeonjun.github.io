@@ -90,26 +90,30 @@ const formattedUpdatedDate = updatedDate ? formatDate(updatedDate) : undefined;
   </article>
 
   <script>
-    document.querySelectorAll('.prose pre').forEach((block) => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'relative group';
-      block.parentNode?.insertBefore(wrapper, block);
-      wrapper.appendChild(block);
+    document.addEventListener('astro:page-load', () => {
+      document.querySelectorAll('.prose pre').forEach((block) => {
+        if (block.closest('.relative.group')) return;
 
-      const button = document.createElement('button');
-      button.className = 'absolute right-2 top-2 rounded bg-gray-700/50 px-2 py-1 text-xs text-gray-300 opacity-0 transition-opacity hover:bg-gray-600/50 group-hover:opacity-100';
-      button.textContent = 'Copy';
-      button.addEventListener('click', async () => {
-        try {
-          const code = block.querySelector('code')?.textContent ?? '';
-          await navigator.clipboard.writeText(code);
-          button.textContent = 'Copied!';
-        } catch {
-          button.textContent = 'Failed';
-        }
-        setTimeout(() => { button.textContent = 'Copy'; }, 2000);
+        const wrapper = document.createElement('div');
+        wrapper.className = 'relative group';
+        block.parentNode?.insertBefore(wrapper, block);
+        wrapper.appendChild(block);
+
+        const button = document.createElement('button');
+        button.className = 'absolute right-2 top-2 rounded bg-gray-700/50 px-2 py-1 text-xs text-gray-300 opacity-0 transition-opacity hover:bg-gray-600/50 group-hover:opacity-100';
+        button.textContent = 'Copy';
+        button.addEventListener('click', async () => {
+          try {
+            const code = block.querySelector('code')?.textContent ?? '';
+            await navigator.clipboard.writeText(code);
+            button.textContent = 'Copied!';
+          } catch {
+            button.textContent = 'Failed';
+          }
+          setTimeout(() => { button.textContent = 'Copy'; }, 2000);
+        });
+        wrapper.appendChild(button);
       });
-      wrapper.appendChild(button);
     });
   </script>
 </BaseLayout>

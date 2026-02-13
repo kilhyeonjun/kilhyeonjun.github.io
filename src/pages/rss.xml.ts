@@ -6,6 +6,11 @@ export async function GET(context: APIContext) {
   const blog = await getPublishedPosts();
   const sorted = sortPostsByDate(blog);
 
+  // TODO: post.body is raw MDX, not rendered HTML.
+  // Ideally use sanitizeHtml(renderToString(post)) or a similar approach
+  // to provide rendered HTML via the `content` option.
+  // However, Astro's render() is not available in API endpoints.
+  // Consider using @astrojs/rss `customData` or a build-time pre-render step.
   return rss({
     title: 'kil-penguin blog',
     description: 'Backend Developer 기술 블로그',
