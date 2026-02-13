@@ -9,9 +9,11 @@ interface Props {
   category: string;
   tags: string[];
   readingTime: number;
+  slug?: string;
 }
 
-const { title, description, publishDate, updatedDate, category, tags, readingTime } = Astro.props;
+const { title, description, publishDate, updatedDate, category, tags, readingTime, slug } = Astro.props;
+const ogImage = slug ? `/og/${slug}.png` : undefined;
 
 const formattedDate = publishDate.toLocaleDateString('ko-KR', {
   year: 'numeric',
@@ -26,7 +28,7 @@ const formattedUpdatedDate = updatedDate?.toLocaleDateString('ko-KR', {
 });
 ---
 
-<BaseLayout title={`${title} | kil-penguin blog`} description={description}>
+<BaseLayout title={`${title} | kil-penguin blog`} description={description} ogImage={ogImage}>
   <article class="py-4">
     <header class="mb-8 border-b border-gray-200 pb-8 dark:border-gray-700">
       <div class="mb-4 flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
@@ -37,12 +39,14 @@ const formattedUpdatedDate = updatedDate?.toLocaleDateString('ko-KR', {
         <span class="rounded-full bg-primary-100 px-2.5 py-0.5 text-xs font-medium text-primary-700 dark:bg-primary-900 dark:text-primary-300">
           {category}
         </span>
-        <span>{readingTime}min read</span>
+        <span>{readingTime}분 읽기</span>
       </div>
       <h1 class="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-100 sm:text-4xl">
         {title}
       </h1>
     </header>
+
+    <slot name="toc" />
 
     <div class="prose prose-lg max-w-none dark:prose-invert prose-headings:font-semibold prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-primary-400">
       <slot />

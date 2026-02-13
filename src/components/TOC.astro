@@ -1,0 +1,129 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+const filteredHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+---
+
+{filteredHeadings.length > 0 && (
+  <>
+    {/* Mobile TOC - collapsible */}
+    <details class="mb-8 rounded-lg border border-gray-200 p-4 dark:border-gray-700 lg:hidden">
+      <summary class="cursor-pointer text-sm font-semibold text-gray-900 dark:text-gray-100">
+        목차
+      </summary>
+      <nav class="mt-3" aria-label="목차">
+        <ul class="space-y-2 text-sm">
+          {filteredHeadings.map((heading) => (
+            <li class={heading.depth === 3 ? 'ml-4' : ''}>
+              <a
+                href={`#${heading.slug}`}
+                class="text-gray-600 transition-colors hover:text-primary-600 dark:text-gray-400 dark:hover:text-primary-400"
+              >
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </details>
+
+    {/* Desktop TOC - fixed sidebar */}
+    <aside
+      id="toc-sidebar"
+      class="fixed top-24 hidden max-h-[calc(100vh-8rem)] w-56 overflow-y-auto xl:block"
+      style="left: calc(50% + 24rem);"
+      aria-label="목차"
+    >
+      <p class="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+        목차
+      </p>
+      <nav>
+        <ul class="space-y-1.5 border-l-2 border-gray-200 dark:border-gray-700">
+          {filteredHeadings.map((heading) => (
+            <li>
+              <a
+                href={`#${heading.slug}`}
+                data-heading-slug={heading.slug}
+                class:list={[
+                  'toc-link block border-l-2 -ml-[2px] py-1 text-sm transition-colors duration-200',
+                  heading.depth === 3 ? 'pl-6' : 'pl-4',
+                  'border-transparent text-gray-500 hover:border-gray-400 hover:text-gray-900 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:text-gray-200',
+                ]}
+              >
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
+  </>
+)}
+
+<script>
+  function initScrollSpy() {
+    const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.toc-link');
+    if (tocLinks.length === 0) return;
+
+    const headingIds = Array.from(tocLinks).map((link) => link.dataset.headingSlug!);
+    const headingElements = headingIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean) as HTMLElement[];
+
+    if (headingElements.length === 0) return;
+
+    function updateActiveLink() {
+      const scrollTop = window.scrollY + 100;
+
+      let activeIndex = 0;
+      for (let i = headingElements.length - 1; i >= 0; i--) {
+        if (headingElements[i].offsetTop <= scrollTop) {
+          activeIndex = i;
+          break;
+        }
+      }
+
+      tocLinks.forEach((link, index) => {
+        if (index === activeIndex) {
+          link.classList.remove(
+            'border-transparent', 'text-gray-500', 'dark:text-gray-400'
+          );
+          link.classList.add(
+            'border-primary-500', 'text-primary-600', 'font-medium', 'dark:text-primary-400'
+          );
+        } else {
+          link.classList.add(
+            'border-transparent', 'text-gray-500', 'dark:text-gray-400'
+          );
+          link.classList.remove(
+            'border-primary-500', 'text-primary-600', 'font-medium', 'dark:text-primary-400'
+          );
+        }
+      });
+    }
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          updateActiveLink();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    });
+
+    updateActiveLink();
+  }
+
+  initScrollSpy();
+</script>

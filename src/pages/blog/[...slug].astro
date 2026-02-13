@@ -1,18 +1,34 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BlogPostLayout from '../../layouts/BlogPostLayout.astro';
+import TOC from '../../components/TOC.astro';
+import PostNavigation from '../../components/PostNavigation.astro';
+import Comments from '../../components/Comments.astro';
 import { getReadingTime } from '../../lib/utils';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
-  return posts.map((post) => ({
-    params: { slug: post.id },
-    props: { post },
-  }));
+  const sortedPosts = posts.sort(
+    (a, b) => a.data.publishDate.valueOf() - b.data.publishDate.valueOf()
+  );
+
+  return sortedPosts.map((post, index) => {
+    const prevPost = index > 0 ? sortedPosts[index - 1] : null;
+    const nextPost = index < sortedPosts.length - 1 ? sortedPosts[index + 1] : null;
+
+    return {
+      params: { slug: post.id },
+      props: {
+        post,
+        prevPost: prevPost ? { title: prevPost.data.title, slug: prevPost.id } : null,
+        nextPost: nextPost ? { title: nextPost.data.title, slug: nextPost.id } : null,
+      },
+    };
+  });
 }
 
-const { post } = Astro.props;
-const { Content } = await render(post);
+const { post, prevPost, nextPost } = Astro.props;
+const { Content, headings } = await render(post);
 const readingTime = getReadingTime(post.body ?? '');
 ---
 
@@ -24,6 +40,10 @@ const readingTime = getReadingTime(post.body ?? '');
   category={post.data.category}
   tags={post.data.tags}
   readingTime={readingTime}
+  slug={post.id}
 >
+  <TOC headings={headings} slot="toc" />
   <Content />
+  <PostNavigation prevPost={prevPost} nextPost={nextPost} />
+  <Comments slug={post.id} />
 </BlogPostLayout>

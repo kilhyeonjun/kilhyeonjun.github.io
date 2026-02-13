@@ -35,6 +35,8 @@ jobs:
 
       - name: Build with Astro
         run: npm run build
+        env:
+          SITE: https://kilhyeonjun.github.io
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

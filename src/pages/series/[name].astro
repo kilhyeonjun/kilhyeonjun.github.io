@@ -1,0 +1,61 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+
+  const seriesNames = new Set<string>();
+  allPosts.forEach((post) => {
+    if (post.data.series) {
+      seriesNames.add(post.data.series.name);
+    }
+  });
+
+  return [...seriesNames].map((name) => {
+    const seriesPosts = allPosts
+      .filter((post) => post.data.series?.name === name)
+      .sort((a, b) => (a.data.series?.order ?? 0) - (b.data.series?.order ?? 0));
+
+    return {
+      params: { name },
+      props: { name, posts: seriesPosts },
+    };
+  });
+}
+
+const { name, posts } = Astro.props;
+---
+
+<BaseLayout title={`${name} | kil-penguin blog`} description={`${name} 시리즈`}>
+  <section class="py-4">
+    <h1 class="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
+      {name}
+    </h1>
+    <p class="mb-8 text-gray-600 dark:text-gray-400">
+      {posts.length}편의 시리즈
+    </p>
+    <ol class="space-y-4">
+      {posts.map((post, index) => (
+        <li>
+          <a
+            href={`/blog/${post.id}/`}
+            class="group flex items-start gap-4 rounded-xl border border-gray-200 p-5 transition-all hover:border-primary-400 hover:shadow-md dark:border-gray-700 dark:hover:border-primary-500"
+          >
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700 dark:bg-primary-900 dark:text-primary-300">
+              {index + 1}
+            </span>
+            <div class="flex flex-col">
+              <span class="font-semibold text-gray-900 group-hover:text-primary-600 dark:text-gray-100 dark:group-hover:text-primary-400">
+                {post.data.title}
+              </span>
+              <span class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {post.data.publishDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </span>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </section>
+</BaseLayout>

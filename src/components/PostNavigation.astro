@@ -1,0 +1,39 @@
+---
+interface Props {
+  prevPost?: { title: string; slug: string } | null;
+  nextPost?: { title: string; slug: string } | null;
+}
+
+const { prevPost, nextPost } = Astro.props;
+---
+
+{(prevPost || nextPost) && (
+  <nav class="mt-12 grid grid-cols-1 gap-4 border-t border-gray-200 pt-8 dark:border-gray-700 sm:grid-cols-2" aria-label="게시글 네비게이션">
+    {prevPost ? (
+      <a
+        href={`/blog/${prevPost.slug}/`}
+        class="group flex flex-col rounded-lg border border-gray-200 p-4 transition-colors hover:border-primary-400 dark:border-gray-700 dark:hover:border-primary-500"
+      >
+        <span class="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">&larr; 이전 글</span>
+        <span class="text-sm font-semibold text-gray-900 group-hover:text-primary-600 dark:text-gray-100 dark:group-hover:text-primary-400">
+          {prevPost.title}
+        </span>
+      </a>
+    ) : (
+      <div />
+    )}
+    {nextPost ? (
+      <a
+        href={`/blog/${nextPost.slug}/`}
+        class="group flex flex-col items-end rounded-lg border border-gray-200 p-4 text-right transition-colors hover:border-primary-400 dark:border-gray-700 dark:hover:border-primary-500"
+      >
+        <span class="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">다음 글 &rarr;</span>
+        <span class="text-sm font-semibold text-gray-900 group-hover:text-primary-600 dark:text-gray-100 dark:group-hover:text-primary-400">
+          {nextPost.title}
+        </span>
+      </a>
+    ) : (
+      <div />
+    )}
+  </nav>
+)}

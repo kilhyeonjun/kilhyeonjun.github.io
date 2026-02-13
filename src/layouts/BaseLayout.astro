@@ -1,15 +1,18 @@
 ---
 import '../styles/global.css';
 import ThemeToggle from '../components/ThemeToggle.astro';
+import SearchDialog from '../components/SearchDialog.astro';
 
 interface Props {
   title: string;
   description?: string;
   lang?: 'ko' | 'en';
+  ogImage?: string;
 }
 
-const { title, description = 'Backend Developer 기술 블로그', lang = 'ko' } = Astro.props;
+const { title, description = 'Backend Developer 기술 블로그', lang = 'ko', ogImage } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImageURL = ogImage ? new URL(ogImage, Astro.site).href : undefined;
 ---
 
 <!doctype html>
@@ -22,6 +25,19 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <link rel="canonical" href={canonicalURL} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate" type="application/rss+xml" title="kil-penguin blog RSS" href="/rss.xml" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {ogImageURL && <meta property="og:image" content={ogImageURL} />}
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImageURL && <meta name="twitter:image" content={ogImageURL} />}
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -57,12 +73,16 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
           <a href="/blog/" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400">
             Blog
           </a>
+          <a href="/categories/" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400 sm:block">
+            Categories
+          </a>
+          <a href="/series/" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400 sm:block">
+            Series
+          </a>
           <a href="/tags/" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400">
             Tags
           </a>
-          <a href="/resume/" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400">
-            About
-          </a>
+          <SearchDialog />
           <ThemeToggle />
         </div>
       </nav>

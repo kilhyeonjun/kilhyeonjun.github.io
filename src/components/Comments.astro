@@ -1,0 +1,65 @@
+---
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+---
+
+<section class="mt-12 border-t border-gray-200 pt-8 dark:border-gray-700" id="comments">
+  <h2 class="mb-6 text-xl font-bold text-gray-900 dark:text-gray-100">댓글</h2>
+  <div id="giscus-container">
+    <script
+      is:inline
+      src="https://giscus.app/client.js"
+      data-repo="kilhyeonjun/kilhyeonjun.github.io"
+      data-repo-id=""
+      data-category="Announcements"
+      data-category-id=""
+      data-mapping="pathname"
+      data-strict="0"
+      data-reactions-enabled="1"
+      data-emit-metadata="0"
+      data-input-position="top"
+      data-theme="preferred_color_scheme"
+      data-lang="ko"
+      data-loading="lazy"
+      crossorigin="anonymous"
+      async
+    ></script>
+  </div>
+</section>
+
+<script>
+  function getGiscusTheme(): string {
+    const isDark = document.documentElement.classList.contains('dark');
+    return isDark ? 'dark' : 'light';
+  }
+
+  function setGiscusTheme(theme: string) {
+    const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+    if (iframe) {
+      iframe.contentWindow?.postMessage(
+        { giscus: { setConfig: { theme } } },
+        'https://giscus.app'
+      );
+    }
+  }
+
+  // Observe dark mode changes
+  const observer = new MutationObserver(() => {
+    setGiscusTheme(getGiscusTheme());
+  });
+
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
+
+  // Set initial theme after giscus loads
+  window.addEventListener('message', (event) => {
+    if (event.origin !== 'https://giscus.app') return;
+    if (typeof event.data !== 'object' || !event.data.giscus) return;
+    setGiscusTheme(getGiscusTheme());
+  });
+</script>

@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+
+const seriesMap = new Map<string, { count: number; latestDate: Date }>();
+allPosts.forEach((post) => {
+  if (post.data.series) {
+    const name = post.data.series.name;
+    const existing = seriesMap.get(name);
+    if (existing) {
+      existing.count += 1;
+      if (post.data.publishDate > existing.latestDate) {
+        existing.latestDate = post.data.publishDate;
+      }
+    } else {
+      seriesMap.set(name, { count: 1, latestDate: post.data.publishDate });
+    }
+  }
+});
+
+const sortedSeries = [...seriesMap.entries()]
+  .filter(([, info]) => info.count > 1)
+  .sort((a, b) => b[1].latestDate.valueOf() - a[1].latestDate.valueOf());
+---
+
+<BaseLayout title="Series | kil-penguin blog" description="시리즈 글 목록">
+  <section class="py-4">
+    <h1 class="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">Series</h1>
+    <p class="mb-8 text-gray-600 dark:text-gray-400">
+      총 {sortedSeries.length}개의 시리즈
+    </p>
+    <div class="grid gap-4 sm:grid-cols-2">
+      {sortedSeries.map(([name, info]) => (
+        <a
+          href={`/series/${encodeURIComponent(name)}/`}
+          class="flex flex-col rounded-xl border border-gray-200 p-5 transition-all hover:border-primary-400 hover:shadow-md dark:border-gray-700 dark:hover:border-primary-500"
+        >
+          <span class="mb-2 font-semibold text-gray-900 dark:text-gray-100">{name}</span>
+          <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+            <span>{info.count}편</span>
+            <span>마지막 업데이트: {info.latestDate.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
