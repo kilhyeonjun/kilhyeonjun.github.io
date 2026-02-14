@@ -11,7 +11,7 @@ originalUrl: "https://penguin-dev.tistory.com/15"
 
 # Spring Global Exception Handler
 
-![](/images/tistory/15/Spring Framework Global Exception Handling.webp)
+![](../../assets/images/tistory/15/Spring Framework Global Exception Handling.webp)
 
 ## 개요
 
@@ -87,9 +87,9 @@ public class GlobalExceptionHandler {
 
 #### @ControllerAdvice와 @RestControllerAdvice의 차이
 
-![@ControllerAdvice](/images/tistory/15/스크린샷 2024-10-20 오후 10.54.55.webp)
+![@ControllerAdvice](../../assets/images/tistory/15/스크린샷 2024-10-20 오후 10.54.55.webp)
 
-![@RestControllerAdvice](/images/tistory/15/스크린샷 2024-10-20 오후 10.54.42.webp)
+![@RestControllerAdvice](../../assets/images/tistory/15/스크린샷 2024-10-20 오후 10.54.42.webp)
 
 `@ControllerAdvice`는 View를 반환하는 예외 처리에 사용되고, `@RestControllerAdvice`는 JSON 데이터를 반환할 때 사용된다.
 즉, `@RestControllerAdvice`는 `@ControllerAdvice`에 `@ResponseBody`가 추가된 형태다.추가로 `@RestControllerAdvice(annotations = RestController.class)`와 같이 특정 어노테이션이 있는 컨트롤러에 대해서만 예외를 처리하도록 설정할 수 있다.

@@ -9,7 +9,7 @@ source: "tistory"
 originalUrl: "https://penguin-dev.tistory.com/8"
 ---
 
-![멀티 스레드 환경에서 동시성 제어 방식 분석 대표 이미지](/images/tistory/8/img.webp)
+![멀티 스레드 환경에서 동시성 제어 방식 분석 대표 이미지](../../assets/images/tistory/8/img.webp)
 
 # 멀티 스레드 환경에서 동시성 제어 방식에 대한 분석 In Java
 
@@ -39,7 +39,7 @@ originalUrl: "https://penguin-dev.tistory.com/8"
 
 ## 3\. 과제에서 발생할 수 있는 동시성 이슈 (lost update)
 
-![](/images/tistory/8/img_1.webp)
+![](../../assets/images/tistory/8/img_1.webp)
 
 위의 이미지는 lost update 문제를 설명한 것이다.
 
@@ -463,30 +463,30 @@ synchronized, ReentrantLock, Atomic 클래스, ConcurrentHashMap 등 다양한 �
 
 -   synchronized: 100번 호출에 대한 시간 41.9s
 
-    ![](/images/tistory/8/img_2.webp)
+    ![](../../assets/images/tistory/8/img_2.webp)
 
 -   ReentrantLock: 100번 호출에 대한 시간 41.3s
 
-    ![](/images/tistory/8/img_3.webp)
+    ![](../../assets/images/tistory/8/img_3.webp)
 
 -   ConcurrentHashMap: 100번 호출에 대한 시간 42.6s
 
-    ![](/images/tistory/8/img_4.webp)
+    ![](../../assets/images/tistory/8/img_4.webp)
 
 
 100개의 다른 userId에 대한 charge 메서드 호출을 100번 반복하여 성능을 측정하였다.
 
 -   synchronized: 100번 호출에 대한 시간 40.6s
 
-    ![](/images/tistory/8/img_5.webp)
+    ![](../../assets/images/tistory/8/img_5.webp)
 
 -   ReentrantLock: 100번 호출에 대한 시간 44.1s
 
-    ![](/images/tistory/8/img_6.webp)
+    ![](../../assets/images/tistory/8/img_6.webp)
 
 -   ConcurrentHashMap: 100번 호출에 대한 시간 7.3s
 
-    ![](/images/tistory/8/img_7.webp)
+    ![](../../assets/images/tistory/8/img_7.webp)
 
 
 ## 5\. 결론

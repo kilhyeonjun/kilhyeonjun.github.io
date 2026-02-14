@@ -25,7 +25,7 @@ originalUrl: "https://kilhyeonjun.github.io/aws/ssa-18-1-serverless/"
 
 ## Serverless in AWS
 
-![Serverless in AWS](/images/legacy/aws/ssa_serverless_in_aws.webp)
+![Serverless in AWS](../../assets/images/legacy/aws/ssa_serverless_in_aws.webp)
 
 - AWS Lambda
 - DynamoDB
@@ -153,7 +153,7 @@ Lambda 한도는 리전당 존재함
 
 ### CloudFront Functions
 
-![CloudFront Functions](/images/legacy/aws/ssa_cloudfront_functions.webp)
+![CloudFront Functions](../../assets/images/legacy/aws/ssa_cloudfront_functions.webp)
 
 - JavaScript로 작성된 경량화된 함수
 - 확장성이 높고 지연 시간에 민감한 CDN 사용자 지정에 사용됨
@@ -167,7 +167,7 @@ CloudFront는 고성능, 고확장성이 필요할 때 뷰어 요청과 뷰어 �
 
 ### Lambda@Edge
 
-![Lambda@Edge](/images/legacy/aws/ssa_lambda_at_edge.webp)
+![Lambda@Edge](../../assets/images/legacy/aws/ssa_lambda_at_edge.webp)
 
 - Node.js 또는 Python으로 작성된 Lambda 함수
 - 초당 수천 개의 요청 처리
@@ -180,7 +180,7 @@ CloudFront는 고성능, 고확장성이 필요할 때 뷰어 요청과 뷰어 �
 
 ### CloudFront Functions vs. Lambda@Edge
 
-![CloudFront Functions vs Lambda@Edge](/images/legacy/aws/ssa_cloudfront_functions_vs_lambda_at_edge.webp)
+![CloudFront Functions vs Lambda@Edge](../../assets/images/legacy/aws/ssa_cloudfront_functions_vs_lambda_at_edge.webp)
 
 #### CloudFront Functions vs. Lambda@Edge - Use Cases
 
@@ -204,13 +204,13 @@ Lambda@Edge
 
 ## Lambda in VPC
 
-![Lambda Default VPC](/images/legacy/aws/ssa_default_lambda_dev.webp)
+![Lambda Default VPC](../../assets/images/legacy/aws/ssa_default_lambda_dev.webp)
 
 - 기본적으로 Lambda 함수는 사용자의 VPC가 아닌 AWS 소유의 VPC에서 실행
 - 따라서 VPC 내에서 리소스(RDS, ElastiCache, 내부 ELB 등)에 액세스할 수 없음
 - 이를 해결하려면 사용자의 VPC에서 Lambda 함수를 시작
 
-![Lambda in VPC](/images/legacy/aws/ssa_lambda_in_vpc.webp)
+![Lambda in VPC](../../assets/images/legacy/aws/ssa_lambda_in_vpc.webp)
 
 - 사용자의 VPC에서 Lambda 함수를 시작하려면 VPC ID Lambda 함수를 시작하려는 서브넷을 지정하고 Lambda 함수에 보안 그룹을 추가해야 함
 - Lambda는 사용자의 서브넷에 ENI (Elastic Network Interface)를 생성
@@ -227,7 +227,7 @@ VPC에서 Lambda를 사용하는 대표적인 사용 사례는 RDS 프록시이�
 
 ### Invoking Lambda from RDS & Aurora
 
-![Invoking Lambda from RDS](/images/legacy/aws/ssa_invoke_lambda_in_rds.webp)
+![Invoking Lambda from RDS](../../assets/images/legacy/aws/ssa_invoke_lambda_in_rds.webp)
 
 - DB 인스턴스 안에서 람다 함수를 호출할 수 있음
 - DB 안의 데이터를 처리할 수 있게 됨
@@ -237,7 +237,7 @@ VPC에서 Lambda를 사용하는 대표적인 사용 사례는 RDS 프록시이�
 
 ### RDS Event Notifications
 
-![RDS Event Notifications](/images/legacy/aws/ssa_rds_event_noti.webp)
+![RDS Event Notifications](../../assets/images/legacy/aws/ssa_rds_event_noti.webp)
 
 - DB 인스턴스 자체에 대한 정보를 알려주는 알림 (created, stopped, start, ...)
 - DB 데이터의 대한 정보는 없음

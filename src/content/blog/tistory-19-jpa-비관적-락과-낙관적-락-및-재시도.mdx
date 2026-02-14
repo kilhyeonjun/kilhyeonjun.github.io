@@ -9,7 +9,7 @@ source: "tistory"
 originalUrl: "https://penguin-dev.tistory.com/19"
 ---
 
-![](/images/tistory/19/DALL·E 2024-10-24 19.05.07 - A visual representation of concurrency control showing two distinct paths_ one with a heavy lock for pessimistic locking and another with a version ic.webp)
+![](../../assets/images/tistory/19/DALL·E 2024-10-24 19.05.07 - A visual representation of concurrency control showing two distinct paths_ one with a heavy lock for pessimistic locking and another with a version ic.webp)
 
 ## 개요
 
@@ -56,7 +56,7 @@ Optional<ConcertSeat> findByIdWithLock(Long concertSeatId);
 
 #### 비관적 락 시퀀스 다이어그램
 
-![](/images/tistory/19/스크린샷 2024-10-24 오후 6.53.00.webp)
+![](../../assets/images/tistory/19/스크린샷 2024-10-24 오후 6.53.00.webp)
 
 이 다이어그램에서 client A가 좌석 예약 요청을 보내고 락을 획득하면 client B와 client C는 대기하게 된다. client A가 좌석 예약에 성공한 후, client B와 client C는 실패하게 된다. 비관적 락에서는 이처럼 불필요한 대기 시간이 발생할 수 있다.
 
@@ -123,7 +123,7 @@ public Reservation reserveConcertSeat(Long concertSeatId, Long userId) {
 
 ### 낙관적 락의 재시도 로직
 
-![](/images/tistory/19/스크린샷 2024-10-24 오후 6.53.17.webp)
+![](../../assets/images/tistory/19/스크린샷 2024-10-24 오후 6.53.17.webp)
 
 낙관적 락은 대기하지 않고 예외를 발생시키기 때문에 **재시도 로직**을 적용할 수 있다. 예외가 발생하면 다시 시도하도록 설계하면, 충돌 시 자동으로 재시도할 수 있다.
 
@@ -288,9 +288,9 @@ class ReserveConcertSeatTest {
 
 #### 사용자 수 1명
 
-![](/images/tistory/19/스크린샷 2024-10-24 오후 6.28.49.webp)
+![](../../assets/images/tistory/19/스크린샷 2024-10-24 오후 6.28.49.webp)
 
-![](/images/tistory/19/스크린샷 2024-10-24 오후 6.29.25.webp)
+![](../../assets/images/tistory/19/스크린샷 2024-10-24 오후 6.29.25.webp)
 
 -   **비관적 락**: 23ms
 -   **낙관적 락**: 19ms
@@ -299,9 +299,9 @@ class ReserveConcertSeatTest {
 
 #### 사용자 수 100명
 
-![](/images/tistory/19/스크린샷 2024-10-24 오후 6.30.28.webp)
+![](../../assets/images/tistory/19/스크린샷 2024-10-24 오후 6.30.28.webp)
 
-![](/images/tistory/19/스크린샷 2024-10-24 오후 6.31.18.webp)
+![](../../assets/images/tistory/19/스크린샷 2024-10-24 오후 6.31.18.webp)
 
 -   **비관적 락**: 136ms
 -   **낙관적 락**: 1043ms
@@ -324,9 +324,9 @@ public Reservation reserveConcertSeat(Long concertSeatId, Long userId) {
 
 #### 사용자 수 100명 (재시도 딜레이 50ms 설정 후)
 
-![](/images/tistory/19/스크린샷 2024-10-24 오후 6_1.30)
+![](../../assets/images/tistory/19/스크린샷 2024-10-24 오후 6_1.30.png)
 
-![](/images/tistory/19/스크린샷 2024-10-24 오후 6.36.49.webp)
+![](../../assets/images/tistory/19/스크린샷 2024-10-24 오후 6.36.49.webp)
 
 -   **비관적 락**: 136ms
 -   **낙관적 락**: 89ms
@@ -335,9 +335,9 @@ public Reservation reserveConcertSeat(Long concertSeatId, Long userId) {
 
 #### 사용자 수 10000명
 
-![](/images/tistory/19/스크린샷 2024-10-24 오후 6.38.09.webp)
+![](../../assets/images/tistory/19/스크린샷 2024-10-24 오후 6.38.09.webp)
 
-![](/images/tistory/19/스크린샷 2024-10-24 오후 6.39.01.webp)
+![](../../assets/images/tistory/19/스크린샷 2024-10-24 오후 6.39.01.webp)
 
 -   **비관적 락**: 1678ms
 -   **낙관적 락**: 835ms

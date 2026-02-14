@@ -74,7 +74,7 @@ org.springframework.orm.hibernate3.support.OpenSessionInViewFilter 클래스
 - 영속 객체는 Persistence 상태를 유지할 수 있으며, 
 - 따라서 프록시 객체에 대한 Lazy Loading을 수행할 수 있게 된다.
 - 버전 2.0부터 스프링 부트는 기본적으로 OSIV가 활성화되어있을 때 경고를 발행하므로 프로덕션 시스템에 영향을 주기 전에 이 문제를 발견 할 수 있다.   
-![img](/images/legacy/java/springboot/openinview.webp)
+![img](../../assets/images/legacy/java/springboot/openinview.webp)
 - 서블릿 필터에서 Session 을 오픈하고 트랜잭션을 시작하던 전통적인 방식의 OPEN SESSION IN VIEW 패턴과 달리 
 - SpringMVC 에서 제공하는 OpenSessionInViewFilter 는 필터 내에서 Session 은 오픈하지만 트랜잭션은 시작하지 않는다. 
 - 따라서 서블릿 필터 안에서는 커넥션 풀로부터 JDBC 커넥션을 얻을 필요가 없다.
@@ -95,7 +95,7 @@ hibernate.enable_lazy_load_no_trans: true
 - 엔티티를 만들 때 변수명에 언더스코어를 붙여준다. 예) createDate -> create_date
 
 ### show-sql: true
-![img](/images/legacy/java/springboot/showsql.webp)
+![img](../../assets/images/legacy/java/springboot/showsql.webp)
 
 ### use-new-id-generator-mappings: false
 - use-new-id-generator-mappings 는 mysql로 말하면 auto_increment 오라클로 말하면 시퀀스를 어떤식으로 사용할지 방식을 결정하는 것인데 
