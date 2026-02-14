@@ -5,6 +5,31 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 import remarkGfm from 'remark-gfm';
 
+/** Remark plugin: convert ```mermaid code blocks to <pre class="mermaid"> HTML nodes (bypasses Shiki) */
+function remarkMermaid() {
+  return (/** @type {import('mdast').Root} */ tree) => {
+    /** @param {import('mdast').Root | import('mdast').Content} node @param {number} [index] @param {any} [parent] */
+    const visit = (node, index, parent) => {
+      if (node.type === 'code' && /** @type {import('mdast').Code} */ (node).lang === 'mermaid') {
+        const value = /** @type {import('mdast').Code} */ (node).value;
+        /** @type {any} */
+        const htmlNode = {
+          type: 'html',
+          value: `<pre class="mermaid">${value}</pre>`,
+        };
+        if (parent && typeof index === 'number') {
+          parent.children[index] = htmlNode;
+        }
+        return;
+      }
+      if ('children' in node) {
+        /** @type {any[]} */ (node.children).forEach((/** @type {any} */ child, /** @type {number} */ i) => visit(child, i, node));
+      }
+    };
+    visit(tree, undefined, undefined);
+  };
+}
+
 function rehypeLazyImages() {
   /** @param {import('hast').Root} tree */
   return (tree) => {
@@ -35,7 +60,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   markdown: {
-    remarkPlugins: [remarkGfm],
+    remarkPlugins: [remarkMermaid, remarkGfm],
     rehypePlugins: [rehypeLazyImages],
     shikiConfig: {
       themes: {

@@ -54,13 +54,10 @@
     container.appendChild(script);
   }
 
-  let observer: MutationObserver;
-  let handleGiscusMessage: (event: MessageEvent) => void;
-
   document.addEventListener('astro:page-load', () => {
     loadGiscus();
 
-    observer = new MutationObserver(() => {
+    const observer = new MutationObserver(() => {
       setGiscusTheme(getGiscusTheme());
     });
 
@@ -69,19 +66,17 @@
       attributeFilter: ['class'],
     });
 
-    handleGiscusMessage = (event: MessageEvent) => {
+    const handleGiscusMessage = (event: MessageEvent) => {
       if (event.origin !== 'https://giscus.app') return;
       if (typeof event.data !== 'object' || !event.data.giscus) return;
       setGiscusTheme(getGiscusTheme());
     };
 
     window.addEventListener('message', handleGiscusMessage);
-  });
 
-  document.addEventListener('astro:before-swap', () => {
-    observer?.disconnect();
-    if (handleGiscusMessage) {
+    document.addEventListener('astro:before-swap', () => {
+      observer.disconnect();
       window.removeEventListener('message', handleGiscusMessage);
-    }
-  }, { once: true });
+    }, { once: true });
+  });
 </script>

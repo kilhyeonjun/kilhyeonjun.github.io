@@ -26,6 +26,9 @@
     "satori": "^0.19.2",
     "tailwindcss": "^4.1.18"
   },
+  "overrides": {
+    "vite": "^6.4.1"
+  },
   "devDependencies": {
     "@types/turndown": "^5.0.6",
     "gray-matter": "^4.0.3",
