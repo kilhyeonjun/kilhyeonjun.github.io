@@ -82,6 +82,35 @@ body {
   color: var(--color-primary-100);
 }
 
+/* Table styles */
+.prose :where(table) {
+  @apply w-full text-sm border-collapse;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.prose :where(thead) {
+  @apply border-b-2 border-gray-200 dark:border-gray-600;
+}
+
+.prose :where(thead th) {
+  @apply bg-gray-50 px-4 py-2.5 text-left font-semibold text-gray-900 dark:bg-gray-800/60 dark:text-gray-100;
+  white-space: nowrap;
+}
+
+.prose :where(tbody td) {
+  @apply px-4 py-2 text-gray-700 dark:text-gray-300;
+}
+
+.prose :where(tbody tr) {
+  @apply border-b border-gray-100 dark:border-gray-700/50;
+}
+
+.prose :where(tbody tr:hover) {
+  @apply bg-gray-50/50 dark:bg-gray-800/30;
+}
+
 /* Focus styles for accessibility */
 a:focus-visible,
 button:focus-visible {

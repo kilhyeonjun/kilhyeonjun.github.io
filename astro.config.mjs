@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
+import remarkGfm from 'remark-gfm';
 
 function rehypeLazyImages() {
   /** @param {import('hast').Root} tree */
@@ -34,6 +35,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   markdown: {
+    remarkPlugins: [remarkGfm],
     rehypePlugins: [rehypeLazyImages],
     shikiConfig: {
       themes: {

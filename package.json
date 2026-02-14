@@ -22,6 +22,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.1.18",
     "astro": "^5.17.1",
+    "remark-gfm": "^4.0.1",
     "satori": "^0.19.2",
     "tailwindcss": "^4.1.18"
   },
@@ -30,6 +31,7 @@
     "gray-matter": "^4.0.3",
     "sharp": "^0.34.5",
     "tsx": "^4.19.4",
-    "turndown": "^7.2.2"
+    "turndown": "^7.2.2",
+    "turndown-plugin-gfm": "^1.0.2"
   }
 }

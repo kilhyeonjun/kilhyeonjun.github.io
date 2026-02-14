@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import TurndownService from 'turndown';
+import { gfm } from 'turndown-plugin-gfm';
 
 // ─── Configuration ───────────────────────────────────────────────
 const SOURCE_DIR = '/tmp/tistory-backup/penguin-dev-1-1';
@@ -46,6 +47,9 @@ function createTurndownService(): TurndownService {
     strongDelimiter: '**',
     emDelimiter: '*',
   });
+
+  // GFM plugin (tables, strikethrough, task lists)
+  turndown.use(gfm);
 
   // Custom rule: tistory image blocks
   turndown.addRule('tistoryFigure', {
