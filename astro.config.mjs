@@ -24,6 +24,11 @@ export default defineConfig({
   redirects: {
     '/about': '/resume/',
   },
+  image: {
+    service: {
+      entrypoint: 'astro/assets/services/sharp',
+    },
+  },
   integrations: [mdx(), sitemap()],
   vite: {
     plugins: [tailwindcss()],
