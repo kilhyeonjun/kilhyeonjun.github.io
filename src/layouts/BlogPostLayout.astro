@@ -93,6 +93,7 @@ const formattedUpdatedDate = updatedDate ? formatDate(updatedDate) : undefined;
     document.addEventListener('astro:page-load', () => {
       document.querySelectorAll('.prose pre').forEach((block) => {
         if (block.closest('.relative.group')) return;
+        if (block.classList.contains('mermaid')) return;
 
         const wrapper = document.createElement('div');
         wrapper.className = 'relative group';

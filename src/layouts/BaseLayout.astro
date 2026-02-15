@@ -108,30 +108,85 @@ const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
       </div>
     </footer>
     <script is:inline>
-      function initMermaid() {
-        const blocks = document.querySelectorAll('pre.mermaid');
-        if (blocks.length === 0) return;
+      (function() {
+        var MERMAID_CDN = 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
+        var mermaidModule = null;
+        var observer = null;
 
-        const isDark = document.documentElement.classList.contains('dark');
-        const theme = isDark ? 'dark' : 'default';
+        function getMermaidTheme() {
+          return document.documentElement.classList.contains('dark') ? 'dark' : 'default';
+        }
 
-        import('https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs')
-          .then(function(mod) {
-            mod.default.initialize({
-              startOnLoad: false,
-              theme: theme,
-              fontFamily: 'sans-serif',
-            });
-            mod.default.run({ nodes: blocks });
+        function preserveSource(blocks) {
+          blocks.forEach(function(block) {
+            if (!block.getAttribute('data-mermaid-source')) {
+              block.setAttribute('data-mermaid-source', block.textContent || '');
+            }
           });
-      }
+        }
 
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initMermaid);
-      } else {
-        initMermaid();
-      }
-      document.addEventListener('astro:page-load', initMermaid);
+        function restoreAndRender(mod) {
+          var blocks = document.querySelectorAll('pre[data-mermaid-source]');
+          if (blocks.length === 0) return;
+
+          // Reset each block to original source text (remove prior SVG render)
+          blocks.forEach(function(block) {
+            block.removeAttribute('data-processed');
+            block.innerHTML = block.getAttribute('data-mermaid-source') || '';
+          });
+
+          mod.default.initialize({
+            startOnLoad: false,
+            theme: getMermaidTheme(),
+            fontFamily: 'sans-serif',
+          });
+          mod.default.run({ nodes: blocks });
+        }
+
+        function setupThemeObserver(mod) {
+          if (observer) observer.disconnect();
+
+          var lastTheme = getMermaidTheme();
+          observer = new MutationObserver(function() {
+            var currentTheme = getMermaidTheme();
+            if (currentTheme !== lastTheme) {
+              lastTheme = currentTheme;
+              restoreAndRender(mod);
+            }
+          });
+
+          observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class'],
+          });
+        }
+
+        function initMermaid() {
+          var blocks = document.querySelectorAll('pre.mermaid');
+          if (blocks.length === 0) return;
+
+          preserveSource(blocks);
+
+          if (mermaidModule) {
+            restoreAndRender(mermaidModule);
+            setupThemeObserver(mermaidModule);
+            return;
+          }
+
+          import(MERMAID_CDN).then(function(mod) {
+            mermaidModule = mod;
+            restoreAndRender(mod);
+            setupThemeObserver(mod);
+          });
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initMermaid);
+        } else {
+          initMermaid();
+        }
+        document.addEventListener('astro:page-load', initMermaid);
+      })();
     </script>
   </body>
 </html>

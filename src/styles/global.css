@@ -111,6 +111,18 @@ body {
   @apply bg-gray-50/50 dark:bg-gray-800/30;
 }
 
+/* Mermaid diagram styling */
+pre.mermaid {
+  @apply flex justify-center bg-transparent p-4;
+  border: none;
+  text-align: center;
+}
+
+pre.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Focus styles for accessibility */
 a:focus-visible,
 button:focus-visible {
