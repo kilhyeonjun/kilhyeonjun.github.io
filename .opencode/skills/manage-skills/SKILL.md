@@ -30,6 +30,9 @@ description: |
 
 | 스킬 | 설명 | 커버 파일 패턴 |
 |------|------|---------------|
+| `verify-content-schema` | MDX 블로그 콘텐츠의 frontmatter 스키마 준수 및 파일 명명 규칙 검증 | `src/content/blog/*.mdx`, `src/content.config.ts` |
+| `verify-astro-components` | Astro 컴포넌트, 레이아웃, 페이지의 구조적 패턴과 규칙 검증 | `src/components/*.astro`, `src/layouts/*.astro`, `src/pages/**/*.astro`, `astro.config.mjs` |
+| `verify-build` | Astro 빌드와 TypeScript 타입 체크 성공 검증 | `**/*.ts`, `**/*.astro`, `package.json`, `tsconfig.json`, `astro.config.mjs` |
 
 ## 워크플로우
 
