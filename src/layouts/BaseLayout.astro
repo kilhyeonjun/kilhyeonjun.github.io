@@ -37,6 +37,7 @@ const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
     <link rel="canonical" href={canonicalURL} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate" type="application/rss+xml" title="kil-penguin blog RSS" href="/rss.xml" />
+    <script src="/legacy-cache-cleanup.js" defer></script>
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalURL} />
