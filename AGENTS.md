@@ -11,3 +11,5 @@
 | `verify-content-schema` | MDX 블로그 콘텐츠의 frontmatter 스키마 준수 및 파일 명명 규칙 검증 |
 | `verify-astro-components` | Astro 컴포넌트, 레이아웃, 페이지의 구조적 패턴과 규칙 검증 |
 | `verify-build` | Astro 빌드와 TypeScript 타입 체크 성공 검증 |
+| `verify-blog-post` | 블로그 MDX frontmatter/SEO/MDX hazard/series 중복 검증 |
+| `package-blog-review` | Telegram 검토용 txt + zip 묶음 생성 |

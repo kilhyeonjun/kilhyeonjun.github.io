@@ -1,43 +1,37 @@
-# Astro Starter Kit: Minimal
+# kilhyeonjun.github.io
 
-```sh
-npm create astro@latest -- --template minimal
+개인 Astro 블로그입니다.
+
+## 주요 경로
+
+| 경로 | 설명 |
+|---|---|
+| `src/content/blog/` | 블로그 MD/MDX 글 |
+| `src/content.config.ts` | Astro content collection schema |
+| `scripts/verify-blog-post.py` | frontmatter/SEO/MDX hazard/series 중복 검증 |
+| `scripts/package-blog-review.py` | Telegram 검토용 txt + zip 묶음 생성 |
+| `dist/` | `npm run build` 결과물 |
+
+## Commands
+
+```bash
+npm run dev
+npm run build
+npm run verify:blog
+npm run verify:blog:post -- src/content/blog/<post>.mdx
+npm run package:blog-review -- src/content/blog/<post>.mdx --output-prefix /tmp/blog-review
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## Blog workflow
 
-## 🚀 Project Structure
+1. 소스 확인 및 공개 가능성 분류
+2. `src/content/blog/<slug>.mdx` 초안 작성
+3. `npm run verify:blog -- <파일>` 또는 `python3 scripts/verify-blog-post.py <파일> --allow-draft --strict` 실행
+4. `npm run build` 실행
+5. 필요 시 `scripts/package-blog-review.py`로 Telegram 검토 묶음 생성
+6. 명시 승인 후 commit/push/publish
+7. GitHub Pages workflow 성공과 live URL 200 확인
 
-Inside of your Astro project, you'll see the following folders and files:
+## Publishing guard
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
-
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
-
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+`draft: false` + push는 공개 배포입니다. 사용자가 `퍼블리시해`, `push해`, `배포해`처럼 명시 승인하기 전에는 draft/build/package까지만 진행합니다.

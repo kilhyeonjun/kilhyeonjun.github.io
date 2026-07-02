@@ -8,6 +8,9 @@
     "build": "astro build && npx pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
+    "verify:blog": "python3 scripts/verify-blog-post.py --all --allow-draft",
+    "verify:blog:post": "python3 scripts/verify-blog-post.py --allow-draft --strict --min-lines 120",
+    "package:blog-review": "python3 scripts/package-blog-review.py",
     "migrate:gatsby": "tsx scripts/migrate-gatsby.ts",
     "migrate:tistory": "tsx scripts/migrate-tistory.ts"
   },
