@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """Focused contracts for the full KilPenguin blog redesign."""
 
+from __future__ import annotations
+
+from html.parser import HTMLParser
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -16,6 +20,62 @@ def read(path: str) -> str:
 def require(text: str, needle: str, label: str) -> None:
     if needle not in text:
         raise AssertionError(f"missing {label}: {needle}")
+
+
+class ArticleInspector(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.headings: list[int] = []
+        self.in_mermaid = False
+        self.mermaid_child_tags = 0
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if re.fullmatch(r"h[1-6]", tag):
+            self.headings.append(int(tag[1]))
+        if tag == "pre" and "mermaid" in (dict(attrs).get("class") or "").split():
+            self.in_mermaid = True
+        elif self.in_mermaid:
+            self.mermaid_child_tags += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "pre" and self.in_mermaid:
+            self.in_mermaid = False
+
+
+def verify_built_article_contracts() -> None:
+    dist = ROOT / "dist"
+    if not dist.exists():
+        raise AssertionError("dist is required; run npm run build before verify:release")
+
+    article_files = sorted((dist / "blog").glob("*/index.html"))
+    if not article_files:
+        raise AssertionError("no built article routes found")
+
+    for page in article_files:
+        inspector = ArticleInspector()
+        built = page.read_text(encoding="utf-8")
+        inspector.feed(built)
+        if inspector.headings.count(1) != 1:
+            raise AssertionError(f"{page.relative_to(ROOT)} must contain exactly one h1")
+        if inspector.mermaid_child_tags:
+            raise AssertionError(f"{page.relative_to(ROOT)} contains unescaped HTML inside Mermaid source")
+
+
+    hierarchy_sample = dist / "blog/go-2021-09-29-go-base-4/index.html"
+    inspector = ArticleInspector()
+    inspector.feed(hierarchy_sample.read_text(encoding="utf-8"))
+    if inspector.headings[:5] != [1, 2, 3, 3, 3]:
+        raise AssertionError(f"body heading hierarchy was flattened: {inspector.headings[:5]}")
+
+    css = "".join(path.read_text(encoding="utf-8") for path in (dist / "_astro").glob("*.css"))
+    if not re.search(r"\[data-article-shell\]\{[^}]*overflow-wrap:anywhere", css):
+        raise AssertionError("compiled article CSS is missing overflow-wrap:anywhere")
+
+    sample = article_files[0].read_text(encoding="utf-8")
+    if "block.textContent = block.getAttribute('data-mermaid-source')" not in sample:
+        raise AssertionError("built Mermaid runtime must restore source as text")
+    if not re.search(r"for\s*\(const block of blocks\)[\s\S]{0,1200}?run\(\{\s*nodes:\s*\[block\]\s*\}\)", sample):
+        raise AssertionError("built Mermaid runtime does not render blocks independently")
 
 
 def verify_archives() -> None:
@@ -94,6 +154,7 @@ def verify_navigation() -> None:
 if __name__ == "__main__":
     verify_archives()
     verify_article()
+    verify_built_article_contracts()
     verify_supporting_pages()
     verify_navigation()
     print("full blog redesign contract: PASS")

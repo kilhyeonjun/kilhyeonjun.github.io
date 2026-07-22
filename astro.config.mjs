@@ -8,14 +8,23 @@ import remarkGfm from 'remark-gfm';
 /** Remark plugin: convert ```mermaid code blocks to <pre class="mermaid"> HTML nodes (bypasses Shiki) */
 function remarkMermaid() {
   return (/** @type {import('mdast').Root} */ tree) => {
+    const hasBodyH1 = tree.children.some((node) => node.type === 'heading' && node.depth === 1);
+    /** @param {string} value */
+    const escapeHtml = (value) => value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
     /** @param {import('mdast').Root | import('mdast').Content} node @param {number} [index] @param {any} [parent] */
     const visit = (node, index, parent) => {
+      if (node.type === 'heading' && hasBodyH1) {
+        node.depth = /** @type {1 | 2 | 3 | 4 | 5 | 6} */ (Math.min(6, node.depth + 1));
+      }
       if (node.type === 'code' && /** @type {import('mdast').Code} */ (node).lang === 'mermaid') {
         const value = /** @type {import('mdast').Code} */ (node).value;
         /** @type {any} */
         const htmlNode = {
           type: 'html',
-          value: `<pre class="mermaid">${value}</pre>`,
+          value: `<pre class="mermaid">${escapeHtml(value)}</pre>`,
         };
         if (parent && typeof index === 'number') {
           parent.children[index] = htmlNode;

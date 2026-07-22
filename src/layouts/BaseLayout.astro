@@ -163,7 +163,7 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
           // Reset each block to original source text (remove prior SVG render)
           blocks.forEach(function(block) {
             block.removeAttribute('data-processed');
-            block.innerHTML = block.getAttribute('data-mermaid-source') || '';
+            block.textContent = block.getAttribute('data-mermaid-source') || '';
           });
 
           var isDark = getMermaidTheme() === 'dark';
@@ -254,7 +254,16 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
               sequenceNumberColor: '#ffffff',
             },
           });
-          await mod.default.run({ nodes: blocks });
+          for (const block of blocks) {
+            const source = block.getAttribute('data-mermaid-source') || '';
+            if (!await mod.default.parse(source, { suppressErrors: true })) continue;
+            try {
+              await mod.default.run({ nodes: [block] });
+            } catch {
+              block.removeAttribute('data-processed');
+              block.textContent = source;
+            }
+          }
         }
 
         function setupThemeObserver(mod) {
