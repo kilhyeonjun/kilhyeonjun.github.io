@@ -1,47 +1,28 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArchiveHeader from '../../components/ArchiveHeader.astro';
 import { getPublishedPosts, formatDate } from '../../lib/utils';
 
 const allPosts = await getPublishedPosts();
-
 const seriesMap = new Map<string, { count: number; latestDate: Date }>();
 allPosts.forEach((post) => {
-  if (post.data.series) {
-    const name = post.data.series.name;
-    const existing = seriesMap.get(name);
-    if (existing) {
-      existing.count += 1;
-      if (post.data.publishDate > existing.latestDate) {
-        existing.latestDate = post.data.publishDate;
-      }
-    } else {
-      seriesMap.set(name, { count: 1, latestDate: post.data.publishDate });
-    }
-  }
+  if (!post.data.series) return;
+  const name = post.data.series.name;
+  const current = seriesMap.get(name);
+  if (current) { current.count += 1; if (post.data.publishDate > current.latestDate) current.latestDate = post.data.publishDate; }
+  else seriesMap.set(name, { count: 1, latestDate: post.data.publishDate });
 });
-
-const sortedSeries = [...seriesMap.entries()]
-  .filter(([, info]) => info.count > 1)
-  .sort((a, b) => b[1].latestDate.valueOf() - a[1].latestDate.valueOf());
+const sortedSeries = [...seriesMap.entries()].filter(([, info]) => info.count > 1).sort((a, b) => b[1].latestDate.valueOf() - a[1].latestDate.valueOf());
 ---
 
-<BaseLayout title="Series | kil-penguin blog" description="시리즈 글 목록">
-  <section class="py-4">
-    <h1 class="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">Series</h1>
-    <p class="mb-8 text-gray-600 dark:text-gray-400">
-      총 {sortedSeries.length}개의 시리즈
-    </p>
-    <div class="grid gap-4 sm:grid-cols-2">
-      {sortedSeries.map(([name, info]) => (
-        <a
-          href={`/series/${encodeURIComponent(name)}/`}
-          class="flex flex-col rounded-xl border border-gray-200 p-5 transition-all hover:border-primary-400 hover:shadow-md dark:border-gray-700 dark:hover:border-primary-500"
-        >
-          <span class="mb-2 font-semibold text-gray-900 dark:text-gray-100">{name}</span>
-          <div class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
-            <span>{info.count}편</span>
-            <span>마지막 업데이트: {formatDate(info.latestDate)}</span>
-          </div>
+<BaseLayout title="Series | KilPenguin Field Notes" description="연속된 학습 기록" wide>
+  <section class="mx-auto max-w-5xl py-6 sm:py-10">
+    <ArchiveHeader eyebrow="Series" title="연속된 탐구" description="한 번에 끝나지 않는 주제를 순서와 맥락이 이어지는 노트로 묶었습니다." count={sortedSeries.length} countLabel="series" />
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      {sortedSeries.map(([name, info], index) => (
+        <a href={`/series/${encodeURIComponent(name)}/`} class="group flex min-h-40 flex-col justify-between rounded-2xl border border-gray-200 bg-white p-6 hover:border-primary-400 hover:shadow-[0_16px_45px_rgba(37,99,235,0.08)] dark:border-gray-700 dark:bg-gray-800 dark:hover:border-primary-500">
+          <span class="font-mono text-[10px] text-gray-400">SERIES {String(index + 1).padStart(2, '0')}</span>
+          <span class="mt-8"><strong class="block text-lg text-gray-900 group-hover:text-primary-700 dark:text-gray-100 dark:group-hover:text-primary-300">{name}</strong><span class="mt-2 flex justify-between font-mono text-[11px] text-gray-500 dark:text-gray-400"><span>{info.count} notes</span><span>{formatDate(info.latestDate)}</span></span></span>
         </a>
       ))}
     </div>

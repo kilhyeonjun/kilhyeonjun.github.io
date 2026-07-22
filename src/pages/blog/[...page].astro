@@ -1,61 +1,30 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArchiveHeader from '../../components/ArchiveHeader.astro';
 import BlogCard from '../../components/BlogCard.astro';
 import { getPublishedPosts } from '../../lib/utils';
 import type { GetStaticPaths } from 'astro';
 
 export const getStaticPaths = (async ({ paginate }) => {
   const allPosts = await getPublishedPosts();
-  const sortedPosts = [...allPosts].sort(
-    (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
-  );
-
+  const sortedPosts = [...allPosts].sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
   return paginate(sortedPosts, { pageSize: 15 });
 }) satisfies GetStaticPaths;
 
 const { page } = Astro.props;
 ---
 
-<BaseLayout title="Blog | kil-penguin blog" description="모든 블로그 글 목록">
-  <section class="py-4">
-    <h1 class="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">Blog</h1>
-    <p class="mb-8 text-gray-600 dark:text-gray-400">
-      총 {page.total}개의 글
-    </p>
-    <div class="space-y-4">
-      {page.data.map((post) => (
-        <BlogCard
-          title={post.data.title}
-          description={post.data.description}
-          publishDate={post.data.publishDate}
-          category={post.data.category}
-          tags={post.data.tags}
-          slug={post.id}
-        />
-      ))}
+<BaseLayout title="Blog | KilPenguin Field Notes" description="백엔드 엔지니어링과 시스템 설계 기록" wide>
+  <section class="mx-auto max-w-5xl py-6 sm:py-10">
+    <ArchiveHeader eyebrow="Field Notes" title="기술 기록" description="운영에서 만난 문제와 시스템 설계 원리를 다시 꺼내 쓸 수 있는 형태로 정리합니다." count={page.total} countLabel="notes" />
+    <div class="mt-4">
+      {page.data.map((post) => <BlogCard title={post.data.title} description={post.data.description} publishDate={post.data.publishDate} category={post.data.category} tags={post.data.tags} slug={post.id} />)}
     </div>
-
     {page.lastPage > 1 && (
-      <nav class="mt-12 flex items-center justify-center gap-2" aria-label="페이지 네비게이션">
-        {page.url.prev && (
-          <a
-            href={page.url.prev}
-            class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-          >
-            &larr; 이전
-          </a>
-        )}
-        <span class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-          {page.currentPage} / {page.lastPage}
-        </span>
-        {page.url.next && (
-          <a
-            href={page.url.next}
-            class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-          >
-            다음 &rarr;
-          </a>
-        )}
+      <nav class="mt-10 flex items-center justify-between border-t border-gray-200 pt-6 dark:border-gray-700" aria-label="페이지 네비게이션">
+        {page.url.prev ? <a href={page.url.prev} class="inline-flex min-h-11 min-w-11 items-center rounded-full border border-gray-300 px-4 text-sm font-semibold text-gray-700 hover:border-primary-400 hover:text-primary-700 dark:border-gray-600 dark:text-gray-300">← 이전</a> : <span />}
+        <span class="font-mono text-xs text-gray-500 dark:text-gray-400">{page.currentPage} / {page.lastPage}</span>
+        {page.url.next ? <a href={page.url.next} class="inline-flex min-h-11 min-w-11 items-center rounded-full border border-gray-300 px-4 text-sm font-semibold text-gray-700 hover:border-primary-400 hover:text-primary-700 dark:border-gray-600 dark:text-gray-300">다음 →</a> : <span />}
       </nav>
     )}
   </section>

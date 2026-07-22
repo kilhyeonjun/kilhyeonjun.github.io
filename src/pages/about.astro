@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="About | KilPenguin Field Notes" description="KilPenguin과 기술 기록에 대하여" wide>
+  <article data-about-page class="mx-auto max-w-5xl py-6 sm:py-10">
+    <header class="grid gap-8 border-b border-gray-200 pb-10 dark:border-gray-700 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-end">
+      <div>
+        <p class="font-mono text-xs font-semibold uppercase tracking-[0.1em] text-primary-700 dark:text-primary-300">About · KilPenguin</p>
+        <h1 class="mt-4 text-4xl font-bold leading-tight tracking-[-0.045em] text-gray-950 dark:text-gray-50 sm:text-5xl">복잡한 시스템을<br />명확한 기록으로 바꿉니다.</h1>
+      </div>
+      <p class="text-base leading-8 text-gray-600 dark:text-gray-300">백엔드 엔지니어 길현준입니다. 안정적인 서버와 확장 가능한 구조를 설계하고, 다시 사용할 수 있는 원리와 판단을 Field Notes로 남깁니다.</p>
+    </header>
+
+    <section class="grid gap-8 border-b border-gray-200 py-10 dark:border-gray-700 md:grid-cols-[12rem_minmax(0,1fr)]">
+      <h2 class="font-mono text-xs font-semibold uppercase tracking-[0.1em] text-gray-500 dark:text-gray-400">What I work on</h2>
+      <div class="grid gap-6 sm:grid-cols-3">
+        {[['01', 'Backend Systems', '안정적인 API와 데이터 흐름, 운영 가능한 서버 구조를 만듭니다.'], ['02', 'System Design', '확장성·일관성·복원력의 균형을 설계 관점에서 탐구합니다.'], ['03', 'Field Notes', '결과보다 판단의 근거와 재사용 가능한 원리를 기록합니다.']].map(([index, title, detail]) => (
+          <section><span class="font-mono text-[10px] text-primary-700 dark:text-primary-300">{index}</span><h3 class="mt-2 font-bold text-gray-900 dark:text-gray-100">{title}</h3><p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">{detail}</p></section>
+        ))}
+      </div>
+    </section>
+
+    <section class="grid gap-8 py-10 md:grid-cols-[12rem_minmax(0,1fr)]">
+      <h2 class="font-mono text-xs font-semibold uppercase tracking-[0.1em] text-gray-500 dark:text-gray-400">Elsewhere</h2>
+      <div class="grid gap-3 sm:grid-cols-3">
+        <a href="/blog/" class="group flex min-h-24 items-center justify-between rounded-2xl border border-gray-200 p-5 hover:border-primary-400 dark:border-gray-700 dark:hover:border-primary-500"><span><strong class="block text-gray-900 dark:text-gray-100">Blog</strong><small class="text-gray-500 dark:text-gray-400">전체 기술 기록</small></span><span aria-hidden="true">→</span></a>
+        <a href="https://kilhyeonjun.github.io/resume/" class="group flex min-h-24 items-center justify-between rounded-2xl border border-gray-200 p-5 hover:border-primary-400 dark:border-gray-700 dark:hover:border-primary-500"><span><strong class="block text-gray-900 dark:text-gray-100">Resume</strong><small class="text-gray-500 dark:text-gray-400">경력과 포트폴리오</small></span><span aria-hidden="true">↗</span></a>
+        <a href="https://github.com/kilhyeonjun" class="group flex min-h-24 items-center justify-between rounded-2xl border border-gray-200 p-5 hover:border-primary-400 dark:border-gray-700 dark:hover:border-primary-500"><span><strong class="block text-gray-900 dark:text-gray-100">GitHub</strong><small class="text-gray-500 dark:text-gray-400">공개 코드</small></span><span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+  </article>
+</BaseLayout>

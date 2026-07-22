@@ -47,9 +47,6 @@ function rehypeLazyImages() {
 
 export default defineConfig({
   site: 'https://kilhyeonjun.github.io',
-  redirects: {
-    '/about': '/resume/',
-  },
   image: {
     service: {
       entrypoint: 'astro/assets/services/sharp',

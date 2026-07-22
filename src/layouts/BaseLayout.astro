@@ -22,6 +22,15 @@ const { title, description = 'Backend Developer 기술 블로그', lang = 'ko', 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const defaultOgImage = '/og-default.png';
 const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
+const currentPath = Astro.url.pathname;
+const navItems = [
+  { href: '/blog/', label: 'Blog', desktop: 'flex' },
+  { href: '/categories/', label: 'Categories', desktop: 'hidden md:flex' },
+  { href: '/series/', label: 'Series', desktop: 'hidden md:flex' },
+  { href: '/tags/', label: 'Tags', desktop: 'hidden md:flex' },
+  { href: '/about/', label: 'About', desktop: 'hidden lg:flex' },
+];
+const isCurrent = (href: string) => currentPath === href || currentPath.startsWith(href);
 ---
 
 <!doctype html>
@@ -33,7 +42,7 @@ const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
     <meta name="generator" content={Astro.generator} />
     {import.meta.env.PROD && (
       <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://giscus.app https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; frame-src https://giscus.app; connect-src 'self';" />
+        content="default-src 'self'; script-src 'self' 'unsafe-inline' https://giscus.app https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://giscus.app; font-src 'self' data:; img-src 'self' data:; frame-src https://giscus.app; connect-src 'self';" />
     )}
     <link rel="canonical" href={canonicalURL} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -83,21 +92,26 @@ const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
           </span>
         </a>
         <div class="flex items-center gap-1">
-          <a href="/blog/" class="flex min-h-11 items-center rounded-lg px-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400 sm:px-3">
-            Blog
+          {navItems.map((item) => (
+            <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined} class:list={[item.desktop, 'min-h-11 items-center rounded-lg px-2 text-sm font-medium transition sm:px-3', isCurrent(item.href) ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300' : 'text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400']}>
+              {item.label}
+            </a>
+          ))}
+          <a data-resume-link href="https://kilhyeonjun.github.io/resume/" class="flex min-h-11 items-center rounded-lg border border-gray-200 px-2 text-sm font-semibold text-gray-700 hover:border-primary-400 hover:text-primary-700 dark:border-gray-700 dark:text-gray-200 dark:hover:border-primary-500 dark:hover:text-primary-300 sm:px-3">
+            Resume <span aria-hidden="true" class="ml-1 hidden sm:inline">↗</span>
           </a>
-          <a href="/categories/" class="hidden min-h-11 items-center rounded-lg px-3 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400 md:flex">
-            Categories
-          </a>
-          <a href="/series/" class="hidden min-h-11 items-center rounded-lg px-3 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400 md:flex">
-            Series
-          </a>
-          <a href="/tags/" class="hidden min-h-11 items-center rounded-lg px-3 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400 md:flex">
-            Tags
-          </a>
-          <a href="https://kilhyeonjun.github.io/resume/" class="flex min-h-11 items-center rounded-lg bg-primary-50 px-2 text-sm font-semibold text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 sm:px-3">
-            Resume
-          </a>
+          <details id="mobile-navigation" class="relative md:hidden">
+            <summary class="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-primary-700 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-primary-300" aria-label="전체 탐색">
+              <svg aria-hidden="true" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </summary>
+            <nav aria-label="전체 탐색" class="absolute right-0 top-12 z-50 w-56 rounded-xl border border-gray-200 bg-white p-2 shadow-xl dark:border-gray-700 dark:bg-gray-900">
+              {navItems.map((item) => (
+                <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined} class:list={['flex min-h-11 items-center justify-between rounded-lg px-3 text-sm font-semibold', isCurrent(item.href) ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300' : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800']}>
+                  {item.label}{isCurrent(item.href) && <span aria-hidden="true">•</span>}
+                </a>
+              ))}
+            </nav>
+          </details>
           <SearchDialog />
           <ThemeToggle />
         </div>
@@ -111,7 +125,8 @@ const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
     <footer class="border-t border-gray-200 dark:border-gray-700">
       <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-gray-500 dark:text-gray-400 sm:flex-row sm:items-center sm:justify-between">
         <p><strong class="text-gray-700 dark:text-gray-200">KilPenguin</strong> · Backend engineering field notes<br />&copy; {new Date().getFullYear()} KilPenguin</p>
-        <div class="flex gap-5">
+        <div class="flex flex-wrap gap-1 sm:gap-3">
+          <a class="inline-flex min-h-11 min-w-11 items-center justify-center px-2 hover:text-primary-600 dark:hover:text-primary-400" href="/about/">About</a>
           <a class="inline-flex min-h-11 min-w-11 items-center justify-center px-2 hover:text-primary-600 dark:hover:text-primary-400" href="https://github.com/kilhyeonjun">GitHub</a>
           <a class="inline-flex min-h-11 min-w-11 items-center justify-center px-2 hover:text-primary-600 dark:hover:text-primary-400" href="/rss.xml">RSS</a>
           <a class="inline-flex min-h-11 min-w-11 items-center justify-center px-2 hover:text-primary-600 dark:hover:text-primary-400" href="https://kilhyeonjun.github.io/resume/">Resume</a>
@@ -122,6 +137,7 @@ const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
       (function() {
         var MERMAID_CDN = 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
         var mermaidModule = null;
+        var mermaidLoading = null;
         var observer = null;
 
         function getMermaidTheme() {
@@ -136,7 +152,7 @@ const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
           });
         }
 
-        function restoreAndRender(mod) {
+        async function restoreAndRender(mod) {
           var blocks = document.querySelectorAll('pre[data-mermaid-source]');
           if (blocks.length === 0) return;
 
@@ -234,7 +250,7 @@ const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
               sequenceNumberColor: '#ffffff',
             },
           });
-          mod.default.run({ nodes: blocks });
+          await mod.default.run({ nodes: blocks });
         }
 
         function setupThemeObserver(mod) {
@@ -245,7 +261,9 @@ const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
             var currentTheme = getMermaidTheme();
             if (currentTheme !== lastTheme) {
               lastTheme = currentTheme;
-              restoreAndRender(mod);
+              restoreAndRender(mod).catch(function(error) {
+                console.error('Mermaid render failed', error);
+              });
             }
           });
 
@@ -262,15 +280,24 @@ const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
           preserveSource(blocks);
 
           if (mermaidModule) {
-            restoreAndRender(mermaidModule);
-            setupThemeObserver(mermaidModule);
+            restoreAndRender(mermaidModule).then(function() {
+              setupThemeObserver(mermaidModule);
+            }).catch(function(error) {
+              console.error('Mermaid render failed', error);
+            });
             return;
           }
 
-          import(MERMAID_CDN).then(function(mod) {
+          if (mermaidLoading) return;
+          mermaidLoading = import(MERMAID_CDN).then(function(mod) {
             mermaidModule = mod;
-            restoreAndRender(mod);
-            setupThemeObserver(mod);
+            return restoreAndRender(mod).then(function() {
+              setupThemeObserver(mod);
+            });
+          }).catch(function(error) {
+            console.error('Mermaid render failed', error);
+          }).finally(function() {
+            mermaidLoading = null;
           });
         }
 

@@ -2,35 +2,21 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="404 - 페이지를 찾을 수 없습니다 | kil-penguin blog" description="요청하신 페이지를 찾을 수 없습니다.">
-  <section class="flex flex-col items-center justify-center py-24 text-center">
-    <h1 class="mb-4 text-6xl font-bold text-gray-300 dark:text-gray-700">404</h1>
-    <h2 class="mb-4 text-2xl font-semibold text-gray-900 dark:text-gray-100">
-      페이지를 찾을 수 없습니다
-    </h2>
-    <p class="mb-8 text-gray-600 dark:text-gray-400">
-      요청하신 페이지가 존재하지 않거나 이동되었을 수 있습니다.
-    </p>
-    <div class="flex flex-wrap justify-center gap-4">
-      <a
-        href="/"
-        class="rounded-lg bg-primary-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-primary-700"
-      >
-        홈으로 돌아가기
-      </a>
-      <a
-        href="/blog/"
-        class="rounded-lg border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-      >
-        블로그 보기
-      </a>
-      <button
-        type="button"
-        class="rounded-lg border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-        onclick="document.getElementById('search-trigger')?.click()"
-      >
-        검색으로 찾아보기
-      </button>
+<BaseLayout title="404 | KilPenguin Field Notes" description="요청한 페이지를 찾을 수 없습니다." wide>
+  <section data-not-found class="mx-auto grid min-h-[65vh] max-w-5xl items-center py-10">
+    <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-center">
+      <div>
+        <p class="font-mono text-xs font-semibold uppercase tracking-[0.1em] text-amber-600 dark:text-amber-400">Lost packet · 404</p>
+        <h1 class="mt-4 text-[2.65rem] font-bold leading-[1.15] tracking-[-0.05em] text-gray-950 dark:text-gray-50 sm:text-7xl">이 경로의 기록을<br />찾지 못했습니다.</h1>
+        <p class="mt-5 max-w-xl text-base leading-7 text-gray-600 dark:text-gray-300">주소가 바뀌었거나 존재하지 않는 페이지입니다. 아카이브로 돌아가거나 검색에서 필요한 기록을 찾아보세요.</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="/blog/" class="inline-flex min-h-12 items-center rounded-full bg-primary-600 px-5 text-sm font-semibold text-white hover:bg-primary-700">기술 기록 보기</a>
+          <button type="button" class="inline-flex min-h-12 items-center rounded-full border border-gray-300 px-5 text-sm font-semibold text-gray-700 hover:border-primary-400 hover:text-primary-700 dark:border-gray-600 dark:text-gray-200" onclick="document.getElementById('search-trigger')?.click()">검색 열기</button>
+        </div>
+      </div>
+      <div class="rounded-2xl border border-gray-200 bg-gray-50 p-6 font-mono text-xs leading-7 text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400" aria-label="요청 경로 진단">
+        <p><span class="text-gray-400">status</span> 404</p><p><span class="text-gray-400">route</span> not_found</p><p><span class="text-gray-400">fallback</span> /blog/</p><p class="mt-4 text-primary-700 dark:text-primary-300">→ return to field notes</p>
+      </div>
     </div>
   </section>
 </BaseLayout>

@@ -1,34 +1,22 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArchiveHeader from '../../components/ArchiveHeader.astro';
 import { getPublishedPosts } from '../../lib/utils';
 
 const allPosts = await getPublishedPosts();
-
 const categoryCounts = new Map<string, number>();
-allPosts.forEach((post) => {
-  const cat = post.data.category;
-  categoryCounts.set(cat, (categoryCounts.get(cat) ?? 0) + 1);
-});
-
+allPosts.forEach((post) => categoryCounts.set(post.data.category, (categoryCounts.get(post.data.category) ?? 0) + 1));
 const sortedCategories = [...categoryCounts.entries()].sort((a, b) => b[1] - a[1]);
 ---
 
-<BaseLayout title="Categories | kil-penguin blog" description="카테고리별 글 목록">
-  <section class="py-4">
-    <h1 class="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">Categories</h1>
-    <p class="mb-8 text-gray-600 dark:text-gray-400">
-      총 {sortedCategories.length}개의 카테고리
-    </p>
-    <div class="grid gap-4 sm:grid-cols-2">
-      {sortedCategories.map(([category, count]) => (
-        <a
-          href={`/categories/${encodeURIComponent(category)}/`}
-          class="flex items-center justify-between rounded-xl border border-gray-200 p-5 transition-all hover:border-primary-400 hover:shadow-md dark:border-gray-700 dark:hover:border-primary-500"
-        >
-          <span class="font-semibold text-gray-900 dark:text-gray-100">{category}</span>
-          <span class="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-            {count}
-          </span>
+<BaseLayout title="Categories | KilPenguin Field Notes" description="카테고리별 기술 기록" wide>
+  <section class="mx-auto max-w-5xl py-6 sm:py-10">
+    <ArchiveHeader eyebrow="Categories" title="주제별 탐색" description="문제 영역과 기술 맥락을 기준으로 기록을 분류했습니다." count={sortedCategories.length} countLabel="categories" />
+    <div class="mt-6 grid gap-x-8 sm:grid-cols-2">
+      {sortedCategories.map(([category, count], index) => (
+        <a href={`/categories/${encodeURIComponent(category)}/`} class="group flex min-h-20 items-center justify-between border-b border-gray-200 py-4 dark:border-gray-700">
+          <span><span class="font-mono text-[10px] text-gray-400">{String(index + 1).padStart(2, '0')}</span><strong class="ml-3 text-base text-gray-900 group-hover:text-primary-700 dark:text-gray-100 dark:group-hover:text-primary-300">{category}</strong></span>
+          <span class="font-mono text-xs text-gray-500 dark:text-gray-400">{count} notes</span>
         </a>
       ))}
     </div>

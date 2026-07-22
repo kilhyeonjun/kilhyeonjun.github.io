@@ -1,44 +1,21 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArchiveHeader from '../../components/ArchiveHeader.astro';
 import BlogCard from '../../components/BlogCard.astro';
 import { getPublishedPosts, sortPostsByDate } from '../../lib/utils';
 
 export async function getStaticPaths() {
   const allPosts = await getPublishedPosts();
-  const allTags = new Set<string>();
-  allPosts.forEach((post) => post.data.tags.forEach((tag) => allTags.add(tag)));
-
-  return [...allTags].map((tag) => ({
-    params: { tag },
-    props: {
-      tag,
-      posts: sortPostsByDate(allPosts.filter((post) => post.data.tags.includes(tag))),
-    },
-  }));
+  const tags = new Set<string>();
+  allPosts.forEach((post) => post.data.tags.forEach((tag) => tags.add(tag)));
+  return [...tags].map((tag) => ({ params: { tag }, props: { tag, posts: sortPostsByDate(allPosts.filter((post) => post.data.tags.includes(tag))) } }));
 }
-
 const { tag, posts } = Astro.props;
 ---
 
-<BaseLayout title={`#${tag} | kil-penguin blog`} description={`${tag} 태그의 글 목록`}>
-  <section class="py-4">
-    <h1 class="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
-      #{tag}
-    </h1>
-    <p class="mb-8 text-gray-600 dark:text-gray-400">
-      {posts.length}개의 글
-    </p>
-    <div class="space-y-4">
-      {posts.map((post) => (
-        <BlogCard
-          title={post.data.title}
-          description={post.data.description}
-          publishDate={post.data.publishDate}
-          category={post.data.category}
-          tags={post.data.tags}
-          slug={post.id}
-        />
-      ))}
-    </div>
+<BaseLayout title={`#${tag} | KilPenguin Field Notes`} description={`${tag} 태그의 글 목록`} wide>
+  <section class="mx-auto max-w-5xl py-6 sm:py-10">
+    <ArchiveHeader eyebrow="Tag" title={`#${tag}`} description={`${tag} 키워드로 연결된 기술 기록입니다.`} count={posts.length} countLabel="notes" />
+    <div class="mt-4">{posts.map((post) => <BlogCard title={post.data.title} description={post.data.description} publishDate={post.data.publishDate} category={post.data.category} tags={post.data.tags} slug={post.id} />)}</div>
   </section>
 </BaseLayout>
