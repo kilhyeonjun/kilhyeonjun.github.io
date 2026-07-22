@@ -15,9 +15,10 @@ interface Props {
   description?: string;
   lang?: 'ko' | 'en';
   ogImage?: string;
+  wide?: boolean;
 }
 
-const { title, description = 'Backend Developer 기술 블로그', lang = 'ko', ogImage } = Astro.props;
+const { title, description = 'Backend Developer 기술 블로그', lang = 'ko', ogImage, wide = false } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const defaultOgImage = '/og-default.png';
 const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
@@ -73,24 +74,28 @@ const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
       본문으로 건너뛰기
     </a>
     <header class="sticky top-0 z-50 border-b border-gray-200 bg-white/80 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/80">
-      <nav class="mx-auto flex max-w-4xl items-center justify-between px-4 py-4">
-        <a href="/" class="text-xl font-bold text-primary-600 dark:text-primary-400">
-          kil-penguin blog
+      <nav class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:h-[4.5rem]">
+        <a href="/" class="flex min-h-11 min-w-11 items-center justify-center gap-2.5 font-bold tracking-tight text-gray-900 dark:text-gray-100 sm:justify-start">
+          <span class="grid h-9 w-9 place-items-center rounded-lg bg-gray-900 font-mono text-xs text-white dark:bg-gray-100 dark:text-gray-900">KP</span>
+          <span class="hidden leading-tight sm:block">
+            KilPenguin
+            <small class="block font-mono text-[10px] font-medium uppercase tracking-[0.12em] text-gray-500 dark:text-gray-400">Field Notes</small>
+          </span>
         </a>
         <div class="flex items-center gap-1">
-          <a href="/blog/" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400">
+          <a href="/blog/" class="flex min-h-11 items-center rounded-lg px-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400 sm:px-3">
             Blog
           </a>
-          <a href="/categories/" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400 sm:block">
+          <a href="/categories/" class="hidden min-h-11 items-center rounded-lg px-3 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400 md:flex">
             Categories
           </a>
-          <a href="/series/" class="hidden rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400 sm:block">
+          <a href="/series/" class="hidden min-h-11 items-center rounded-lg px-3 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400 md:flex">
             Series
           </a>
-          <a href="/tags/" class="rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400">
+          <a href="/tags/" class="hidden min-h-11 items-center rounded-lg px-3 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-primary-400 md:flex">
             Tags
           </a>
-          <a href="/resume/" class="rounded-lg bg-primary-50 px-3 py-2 text-sm font-semibold text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50">
+          <a href="https://kilhyeonjun.github.io/resume/" class="flex min-h-11 items-center rounded-lg bg-primary-50 px-2 text-sm font-semibold text-primary-700 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-300 dark:hover:bg-primary-900/50 sm:px-3">
             Resume
           </a>
           <SearchDialog />
@@ -99,13 +104,18 @@ const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
       </nav>
     </header>
 
-    <main id="main-content" class="mx-auto max-w-4xl px-4 py-8">
+    <main id="main-content" class:list={["mx-auto px-4", wide ? "max-w-6xl" : "max-w-4xl py-8"]}>
       <slot />
     </main>
 
     <footer class="border-t border-gray-200 dark:border-gray-700">
-      <div class="mx-auto max-w-4xl px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-        <p>&copy; {new Date().getFullYear()} kil-penguin blog. All rights reserved.</p>
+      <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-gray-500 dark:text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+        <p><strong class="text-gray-700 dark:text-gray-200">KilPenguin</strong> · Backend engineering field notes<br />&copy; {new Date().getFullYear()} KilPenguin</p>
+        <div class="flex gap-5">
+          <a class="inline-flex min-h-11 min-w-11 items-center justify-center px-2 hover:text-primary-600 dark:hover:text-primary-400" href="https://github.com/kilhyeonjun">GitHub</a>
+          <a class="inline-flex min-h-11 min-w-11 items-center justify-center px-2 hover:text-primary-600 dark:hover:text-primary-400" href="/rss.xml">RSS</a>
+          <a class="inline-flex min-h-11 min-w-11 items-center justify-center px-2 hover:text-primary-600 dark:hover:text-primary-400" href="https://kilhyeonjun.github.io/resume/">Resume</a>
+        </div>
       </div>
     </footer>
     <script is:inline>

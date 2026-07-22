@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KilPenguin - Backend Engineer &amp; Technical Writer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#7d8497",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#303031",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-background": "#1b1b1d",
+                        "on-secondary-fixed": "#00174b",
+                        "on-tertiary-fixed": "#2a1700",
+                        "inverse-primary": "#c0c6db",
+                        "primary-fixed": "#dce2f7",
+                        "inverse-on-surface": "#f3f0f1",
+                        "surface-tint": "#575e70",
+                        "outline": "#76777d",
+                        "on-secondary-container": "#fefcff",
+                        "surface-container-high": "#eae7e9",
+                        "tertiary-container": "#2a1700",
+                        "surface-variant": "#e5e2e3",
+                        "on-primary-fixed": "#141b2b",
+                        "surface": "#fcf8fa",
+                        "on-tertiary-container": "#b87500",
+                        "surface-bright": "#fcf8fa",
+                        "primary": "#000000",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#f6f3f4",
+                        "on-primary-fixed-variant": "#404758",
+                        "secondary-container": "#316bf3",
+                        "surface-dim": "#dcd9db",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "tertiary-fixed": "#ffddb8",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#003ea8",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1b1b1d",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#dbe1ff",
+                        "surface-container-highest": "#e5e2e3",
+                        "primary-fixed-dim": "#c0c6db",
+                        "surface-container": "#f0edee",
+                        "background": "#fcf8fa",
+                        "on-surface-variant": "#45464c",
+                        "secondary": "#0051d5",
+                        "primary-container": "#141b2b",
+                        "outline-variant": "#c6c6cd",
+                        "tertiary": "#000000"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "container-max": "1200px",
+                        "gutter": "24px",
+                        "section-gap": "80px",
+                        "stack-md": "16px",
+                        "margin-mobile": "16px",
+                        "stack-sm": "8px",
+                        "stack-lg": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "mono-label": ["JetBrains Mono"],
+                        "mono-code": ["JetBrains Mono"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "32px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "mono-label": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "mono-code": ["13px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "headline-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .pattern-dots {
+            background-image: radial-gradient(#c6c6cd 1px, transparent 1px);
+            background-size: 16px 16px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased pt-[80px]">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 w-full z-50 bg-background/90 backdrop-blur-sm flex justify-center px-gutter py-4 border-b border-outline-variant">
+<div class="w-full max-w-container-max mx-auto flex items-center justify-between">
+<div class="flex items-center gap-4">
+<a class="font-headline-sm text-headline-sm font-bold text-primary" href="#">KP / KilPenguin</a>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-on-surface-variant font-mono-label text-mono-label uppercase hover:text-secondary transition-colors duration-200" href="#">Blog</a>
+<a class="text-on-surface-variant font-mono-label text-mono-label uppercase hover:text-secondary transition-colors duration-200" href="#">Categories</a>
+<a class="text-on-surface-variant font-mono-label text-mono-label uppercase hover:text-secondary transition-colors duration-200" href="#">Series</a>
+<a class="text-on-surface-variant font-mono-label text-mono-label uppercase hover:text-secondary transition-colors duration-200" href="#">Tags</a>
+<a class="text-on-surface-variant font-mono-label text-mono-label uppercase hover:text-secondary transition-colors duration-200" href="#">Resume</a>
+<button aria-label="dark_mode" class="text-primary p-2 hover:bg-surface-container-high rounded">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="w-full max-w-container-max mx-auto px-margin-mobile md:px-gutter py-section-gap">
+<!-- Hero Section -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-gutter mb-section-gap">
+<div class="md:col-span-7 flex flex-col justify-center">
+<div class="font-mono-label text-mono-label text-on-surface-variant uppercase mb-4 tracking-wider">
+                    BACKEND ENGINEER · TECHNICAL WRITER
+                </div>
+<h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-6">
+                    복잡한 백엔드 시스템을 이해하고, 기록하고, 설계합니다.
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-2xl">
+                    안정적인 서버 엔지니어링과 확장 가능한 시스템 설계에 집중합니다. 복잡한 문제를 명확한 글로 풀어내며, 기술의 원리를 깊이 탐구하는 것을 즐깁니다.
+                </p>
+<div class="flex flex-wrap gap-4">
+<a class="bg-primary text-on-primary font-mono-label text-mono-label uppercase px-6 py-3 rounded hover:bg-primary-container transition-colors" href="#">
+                        이력서 보기
+                    </a>
+<a class="border border-primary text-primary font-mono-label text-mono-label uppercase px-6 py-3 rounded hover:bg-surface-container-low transition-colors" href="#">
+                        기술 글 읽기
+                    </a>
+</div>
+</div>
+<div class="md:col-span-5 relative">
+<div class="absolute inset-0 pattern-dots opacity-50 z-0"></div>
+<div class="relative z-10 bg-surface border border-outline-variant p-6 rounded-DEFAULT shadow-sm h-full flex flex-col">
+<div class="flex items-center justify-between mb-4 border-b border-outline-variant pb-2">
+<h3 class="font-headline-sm text-headline-sm text-primary">FOCUS PANEL</h3>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="terminal">terminal</span>
+</div>
+<div class="mb-6">
+<div class="font-mono-label text-mono-label text-on-surface-variant mb-2">현재 공부 중인 시리즈</div>
+<div class="bg-surface-container-low border border-outline-variant p-3 rounded font-body-md text-primary">
+                            System-design study: 분산 환경에서의 상태 동기화
+                        </div>
+</div>
+<div class="mt-auto">
+<div class="font-mono-label text-mono-label text-on-surface-variant">최근 업데이트</div>
+<div class="font-mono-code text-mono-code text-primary">2024-10-24</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Flagship Article -->
+<section class="mb-section-gap">
+<div class="font-mono-label text-mono-label text-on-surface-variant uppercase mb-4 border-b border-outline-variant pb-2">
+                Featured Article
+            </div>
+<div class="group relative border border-outline-variant bg-surface hover:border-secondary transition-colors duration-300 rounded cursor-pointer overflow-hidden">
+<div class="grid grid-cols-1 md:grid-cols-2">
+<div class="p-8 md:p-12 flex flex-col justify-center">
+<div class="flex items-center gap-3 mb-6">
+<span class="bg-surface-container-high px-2 py-1 rounded text-mono-code font-mono-code text-on-surface-variant">Series</span>
+<span class="text-mono-code font-mono-code text-on-surface-variant">2024-10-20</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary mb-4 group-hover:text-secondary transition-colors">
+                            [가면사배2 시리즈 #13] 증권 거래소 - 낮은 지연과 결정론적 체결
+                        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">
+                            초저지연 환경에서 주문을 처리하고 결정론적 체결을 보장하기 위한 증권 거래소 시스템의 구조적 특징과 메시지 처리 최적화 기법에 대해 분석합니다.
+                        </p>
+<div class="flex items-center text-secondary font-mono-label text-mono-label uppercase mt-auto">
+                            Read Article <span class="material-symbols-outlined ml-1 text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+<div class="bg-surface-container-low border-t md:border-t-0 md:border-l border-outline-variant p-8 flex items-center justify-center relative min-h-[300px]">
+<!-- Abstract System Flow Motif -->
+<div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(circle at 50% 50%, #2563EB 0%, transparent 50%);"></div>
+<div class="relative w-full max-w-[300px] aspect-square flex flex-col justify-between">
+<div class="flex justify-between items-center w-full">
+<div class="w-12 h-12 border-2 border-outline-variant bg-surface rounded-full flex items-center justify-center z-10"><span class="text-[12px] font-mono-code text-on-surface-variant">IN</span></div>
+<div class="h-0.5 bg-outline-variant flex-1 -mx-2"></div>
+<div class="w-12 h-12 border-2 border-secondary bg-surface rounded-full flex items-center justify-center z-10"><span class="text-[12px] font-mono-code text-secondary">MATCH</span></div>
+</div>
+<div class="flex justify-center items-center w-full h-full my-4">
+<div class="w-0.5 bg-outline-variant h-full"></div>
+</div>
+<div class="flex justify-center items-center w-full">
+<div class="w-12 h-12 border-2 border-outline-variant bg-surface rounded-full flex items-center justify-center z-10"><span class="text-[12px] font-mono-code text-on-surface-variant">OUT</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Articles -->
+<section class="mb-section-gap">
+<div class="flex justify-between items-end border-b border-outline-variant pb-2 mb-6">
+<div class="font-mono-label text-mono-label text-on-surface-variant uppercase">
+                    Recent Logs
+                </div>
+<a class="font-mono-label text-mono-label text-secondary hover:underline" href="#">View All</a>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Article Row 1 -->
+<a class="group block border border-outline-variant bg-surface p-6 rounded hover:border-outline transition-colors" href="#">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+<div class="md:col-span-8">
+<h3 class="font-headline-sm text-headline-sm text-primary mb-2 group-hover:text-secondary transition-colors">결제 시스템 설계</h3>
+<div class="font-body-md text-on-surface-variant line-clamp-1">신뢰성 있는 결제 처리를 위한 분산 트랜잭션과 멱등성 보장 설계.</div>
+</div>
+<div class="md:col-span-4 flex flex-wrap gap-3 md:justify-end font-mono-code text-mono-code text-on-surface-variant">
+<span class="bg-surface-container-high px-2 py-1 rounded">System Design</span>
+<span>2024-10-15</span>
+<span>8 min read</span>
+</div>
+</div>
+</a>
+<!-- Article Row 2 -->
+<a class="group block border border-outline-variant bg-surface p-6 rounded hover:border-outline transition-colors" href="#">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+<div class="md:col-span-8">
+<h3 class="font-headline-sm text-headline-sm text-primary mb-2 group-hover:text-secondary transition-colors">전자 지갑 서비스의 일관성</h3>
+<div class="font-body-md text-on-surface-variant line-clamp-1">동시성 제어와 Event Sourcing 패턴을 활용한 정확한 잔고 관리.</div>
+</div>
+<div class="md:col-span-4 flex flex-wrap gap-3 md:justify-end font-mono-code text-mono-code text-on-surface-variant">
+<span class="bg-surface-container-high px-2 py-1 rounded">Architecture</span>
+<span>2024-10-08</span>
+<span>12 min read</span>
+</div>
+</div>
+</a>
+<!-- Article Row 3 -->
+<a class="group block border border-outline-variant bg-surface p-6 rounded hover:border-outline transition-colors" href="#">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+<div class="md:col-span-8">
+<h3 class="font-headline-sm text-headline-sm text-primary mb-2 group-hover:text-secondary transition-colors">실시간 리더보드 구현</h3>
+<div class="font-body-md text-on-surface-variant line-clamp-1">Redis Sorted Set과 대규모 트래픽 분산 처리를 통한 실시간 순위 시스템.</div>
+</div>
+<div class="md:col-span-4 flex flex-wrap gap-3 md:justify-end font-mono-code text-mono-code text-on-surface-variant">
+<span class="bg-surface-container-high px-2 py-1 rounded">Backend</span>
+<span>2024-09-28</span>
+<span>6 min read</span>
+</div>
+</div>
+</a>
+</div>
+</section>
+<!-- Topic Routes -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-section-gap">
+<a class="group border border-outline-variant bg-surface p-6 rounded flex flex-col justify-between min-h-[160px] hover:border-secondary transition-colors relative overflow-hidden" href="#">
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[100px]" data-icon="article">article</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-primary z-10 group-hover:text-secondary transition-colors">Blog</div>
+<div class="font-mono-label text-mono-label text-on-surface-variant z-10 flex items-center mt-4">
+                    Explore Articles <span class="material-symbols-outlined ml-1 text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</a>
+<a class="group border border-outline-variant bg-surface p-6 rounded flex flex-col justify-between min-h-[160px] hover:border-secondary transition-colors relative overflow-hidden" href="#">
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[100px]" data-icon="library_books">library_books</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-primary z-10 group-hover:text-secondary transition-colors">Series</div>
+<div class="font-mono-label text-mono-label text-on-surface-variant z-10 flex items-center mt-4">
+                    Structured Studies <span class="material-symbols-outlined ml-1 text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</a>
+<a class="group border border-outline-variant bg-surface p-6 rounded flex flex-col justify-between min-h-[160px] hover:border-secondary transition-colors relative overflow-hidden" href="#">
+<div class="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[100px]" data-icon="badge">badge</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-primary z-10 group-hover:text-secondary transition-colors">Resume</div>
+<div class="font-mono-label text-mono-label text-on-surface-variant z-10 flex items-center mt-4">
+                    Professional Experience <span class="material-symbols-outlined ml-1 text-[16px]" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</a>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full max-w-container-max mx-auto px-gutter py-stack-lg flex flex-col md:flex-row justify-between items-center gap-stack-md border-t border-outline-variant mt-section-gap">
+<div class="font-headline-sm text-headline-sm font-bold text-primary">
+            KilPenguin
+        </div>
+<div class="flex items-center gap-6">
+<a class="text-on-surface-variant font-mono-label text-mono-label uppercase hover:text-secondary transition-colors" href="#">RSS Feed</a>
+<a class="text-on-surface-variant font-mono-label text-mono-label uppercase hover:text-secondary transition-colors" href="#">GitHub</a>
+<a class="text-on-surface-variant font-mono-label text-mono-label uppercase hover:text-secondary transition-colors" href="#">LinkedIn</a>
+<a class="text-on-surface-variant font-mono-label text-mono-label uppercase hover:text-secondary transition-colors" href="#">Source Code</a>
+</div>
+<div class="text-on-surface-variant font-body-md text-body-md text-center md:text-right">
+            © 2024 KilPenguin. Built for high-concurrency systems.
+        </div>
+</footer>
+</body></html>

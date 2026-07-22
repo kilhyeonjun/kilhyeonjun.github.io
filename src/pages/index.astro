@@ -1,15 +1,24 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import BlogCard from '../components/BlogCard.astro';
 import { getPublishedPosts, sortPostsByDate } from '../lib/utils';
 
-const allPosts = await getPublishedPosts();
-const recentPosts = sortPostsByDate(allPosts).slice(0, 5);
+const allPosts = sortPostsByDate(await getPublishedPosts());
+const latestPost = allPosts[0];
+const featuredPost = allPosts.find((post) => post.id === '가면사배2-시리즈-13-증권-거래소') ?? latestPost;
+const recentPosts = allPosts
+  .filter((post) => post.id !== latestPost?.id && post.id !== featuredPost?.id)
+  .slice(0, 4);
+
+const formatFieldDate = (date: Date) => [
+  date.getFullYear(),
+  String(date.getMonth() + 1).padStart(2, '0'),
+  String(date.getDate()).padStart(2, '0'),
+].join('.');
 
 const websiteJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'kil-penguin blog',
+  name: 'KilPenguin Field Notes',
   url: 'https://kilhyeonjun.github.io',
   potentialAction: {
     '@type': 'SearchAction',
@@ -19,43 +28,175 @@ const websiteJsonLd = {
 };
 ---
 
-<BaseLayout title="kil-penguin blog" description="Backend Developer 기술 블로그">
+<BaseLayout
+  title="KilPenguin Field Notes"
+  description="백엔드 시스템을 이해하고 기록하고 설계하는 길현준의 기술 블로그"
+  wide
+>
   <script type="application/ld+json" set:html={JSON.stringify(websiteJsonLd)} />
-  <section class="py-8 text-center">
-    <h1 class="mb-3 text-4xl font-bold text-gray-900 dark:text-gray-100">
-      kil-penguin blog
-    </h1>
-    <p class="text-lg text-gray-600 dark:text-gray-400">
-      Backend Developer | 기술 블로그
-    </p>
-    <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-      <a href="/resume/" class="rounded-full bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-400">
-        이력서 / 포트폴리오 보기
-      </a>
-      <a href="/blog/" class="rounded-full border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-primary-300 hover:text-primary-700 dark:border-gray-700 dark:text-gray-300 dark:hover:border-primary-700 dark:hover:text-primary-300">
-        기술 블로그 보기
-      </a>
+
+  <section class="grid items-center gap-8 py-14 md:grid-cols-[minmax(0,7fr)_minmax(21rem,5fr)] md:gap-12 md:py-20 lg:gap-16 lg:py-24">
+    <div>
+      <p class="mb-4 flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.08em] text-primary-700 dark:text-primary-300">
+        <span class="h-2 w-2 rounded-full bg-amber-500 ring-4 ring-amber-100 dark:ring-amber-900/40"></span>
+        Backend Engineer · Technical Writer
+      </p>
+      <h1 class="max-w-3xl text-[2.35rem] font-bold leading-[1.12] tracking-[-0.045em] text-gray-900 dark:text-gray-50 sm:text-5xl lg:text-[4rem] lg:leading-[1.06]">
+        복잡한 백엔드 시스템을 이해하고,<br class="hidden sm:block" /> 기록하고, 설계합니다.
+      </h1>
+      <p class="mt-5 max-w-2xl text-base leading-7 text-gray-600 dark:text-gray-300 sm:text-lg sm:leading-8">
+        안정적인 서버 엔지니어링과 확장 가능한 시스템 설계에 집중합니다. 복잡한 문제를 구조화하고, 배운 원리를 다시 꺼내 쓸 수 있는 기술 글로 남깁니다.
+      </p>
+      <div class="mt-7 grid grid-cols-2 gap-3 sm:flex">
+        <a href="https://kilhyeonjun.github.io/resume/" class="inline-flex min-h-12 items-center justify-center rounded-full bg-primary-600 px-5 text-sm font-semibold text-white transition hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-400">
+          이력서 보기 <span aria-hidden="true" class="ml-1">↗</span>
+        </a>
+        <a href="/blog/" class="inline-flex min-h-12 items-center justify-center rounded-full border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-800 transition hover:border-primary-400 hover:text-primary-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-primary-500 dark:hover:text-primary-300">
+          기술 글 읽기
+        </a>
+      </div>
     </div>
+
+    {latestPost && (
+      <aside class="latest-note relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_18px_55px_rgba(37,99,235,0.08)] dark:border-gray-700 dark:bg-gray-800 sm:p-7" aria-label="최신 글">
+        <div class="relative">
+          <div class="flex items-start justify-between gap-4 text-gray-500 dark:text-gray-400">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.08em]">Latest Field Note</span>
+            <time class="font-mono text-xs" datetime={latestPost.data.publishDate.toISOString()}>{formatFieldDate(latestPost.data.publishDate)}</time>
+          </div>
+          <h2 class="mt-6 text-xl font-bold leading-7 tracking-tight text-gray-900 dark:text-gray-50 sm:text-2xl">
+            {latestPost.data.title}
+          </h2>
+          <p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">{latestPost.data.description}</p>
+          {latestPost.id === featuredPost?.id && (
+            <div class="mt-7 grid grid-cols-4 items-center gap-4" aria-label="주문 처리 흐름">
+              {['ORDER', 'GATEWAY', 'MATCH', 'LEDGER'].map((stage, index) => (
+                <span class:list={['flow-node relative rounded-lg border bg-white px-1 py-2 text-center font-mono text-[9px] font-bold text-gray-800 dark:bg-gray-900 dark:text-gray-100', stage === 'MATCH' ? 'border-amber-400 shadow-[inset_0_-3px_0_#fef3c7] dark:shadow-[inset_0_-3px_0_#78350f]' : 'border-gray-300 dark:border-gray-600']} data-arrow={index < 3 ? 'true' : undefined}>
+                  {stage}
+                </span>
+              ))}
+            </div>
+          )}
+          <a href={`/blog/${latestPost.id}/`} class="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-primary-700 hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200">
+            최신 글 읽기 <span aria-hidden="true" class="ml-2">→</span>
+          </a>
+        </div>
+      </aside>
+    )}
   </section>
 
-  <section class="py-8">
-    <div class="mb-6 flex items-center justify-between">
-      <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">최근 글</h2>
-      <a href="/blog/" class="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
-        전체 보기 &rarr;
-      </a>
+  {featuredPost && (
+    <section class="border-t border-gray-200 py-14 dark:border-gray-700 md:py-18">
+      <div class="mb-7">
+        <p class="font-mono text-xs font-semibold uppercase tracking-[0.08em] text-primary-700 dark:text-primary-300">Featured Note · System Design</p>
+        <h2 class="mt-1 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">이번에 깊게 본 시스템</h2>
+      </div>
+      <article class="grid overflow-hidden rounded-2xl bg-gray-900 text-white md:grid-cols-[minmax(0,1fr)_minmax(24rem,.8fr)] dark:bg-gray-950">
+        <div class="p-7 sm:p-10 lg:p-11">
+          <p class="font-mono text-xs font-semibold uppercase tracking-[0.08em] text-primary-300">
+            {formatFieldDate(featuredPost.data.publishDate)} · 가면사배2 #13
+          </p>
+          <h3 class="mt-4 text-2xl font-bold leading-8 tracking-tight sm:text-3xl sm:leading-10">
+            증권 거래소 — 낮은 지연과 결정론적 체결
+          </h3>
+          <p class="mt-4 leading-7 text-gray-300">
+            주문이 게이트웨이를 통과해 매칭 엔진에서 체결되고 원장에 기록되기까지, 지연을 줄이면서도 재현 가능한 결과를 만드는 설계 선택을 살펴봅니다.
+          </p>
+          <a href={`/blog/${featuredPost.id}/`} class="mt-7 inline-flex min-h-11 items-center border-b border-gray-600 font-semibold hover:border-primary-300 hover:text-primary-200">
+            설계 노트 읽기 <span aria-hidden="true" class="ml-2">→</span>
+          </a>
+        </div>
+        <div class="relative grid min-h-60 place-items-center bg-slate-100 p-5 sm:min-h-80 sm:p-8 dark:bg-slate-800">
+          <span class="absolute left-5 top-4 font-mono text-[10px] uppercase tracking-[0.08em] text-slate-500 dark:text-slate-400">matching-engine.flow</span>
+          <svg class="w-full max-w-xl" viewBox="0 0 560 270" role="img" aria-label="주문부터 원장까지의 증권 거래소 처리 흐름">
+            <defs>
+              <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#2563eb" /></marker>
+            </defs>
+            <g fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)">
+              <path d="M125 130H175" /><path d="M275 130H325" /><path d="M425 130H475" />
+            </g>
+            <g fill="#fff" stroke="#94a3b8" stroke-width="2">
+              <rect x="25" y="95" width="100" height="70" rx="10" />
+              <rect x="175" y="95" width="100" height="70" rx="10" />
+              <rect x="325" y="95" width="100" height="70" rx="10" stroke="#f59e0b" />
+              <rect x="475" y="95" width="70" height="70" rx="10" />
+            </g>
+            <g fill="#111827" font-family="ui-monospace, monospace" font-size="12" font-weight="700" text-anchor="middle">
+              <text x="75" y="135">ORDER</text><text x="225" y="135">GATEWAY</text><text x="375" y="135">MATCH</text><text x="510" y="135">LOG</text>
+            </g>
+            <circle cx="375" cy="78" r="6" fill="#f59e0b" />
+            <path d="M75 185V220H510V185" fill="none" stroke="#94a3b8" stroke-dasharray="5 5" />
+            <text x="292" y="245" fill="#64748b" font-family="ui-monospace, monospace" font-size="11" text-anchor="middle">DETERMINISTIC REPLAY / LEDGER</text>
+          </svg>
+        </div>
+      </article>
+    </section>
+  )}
+
+  <section class="grid gap-9 border-t border-gray-200 py-14 dark:border-gray-700 md:grid-cols-[minmax(0,1fr)_18rem] md:gap-14 md:py-18">
+    <div>
+      <div class="mb-6 flex items-end justify-between gap-4">
+        <div>
+          <p class="font-mono text-xs font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-400">Recent Logs</p>
+          <h2 class="mt-1 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">최근 기록</h2>
+        </div>
+        <a href="/blog/" class="inline-flex min-h-11 items-center text-sm font-semibold text-primary-700 hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200">전체 보기 →</a>
+      </div>
+      <div class="border-t border-gray-900 dark:border-gray-100">
+        {recentPosts.map((post) => (
+          <a href={`/blog/${post.id}/`} class="group grid min-h-[5.5rem] grid-cols-[4.8rem_minmax(0,1fr)_1rem] items-center gap-3 border-b border-gray-200 py-4 dark:border-gray-700 sm:grid-cols-[7rem_minmax(0,1fr)_1.5rem] sm:gap-5">
+            <time class="font-mono text-[11px] text-gray-500 dark:text-gray-400 sm:text-xs" datetime={post.data.publishDate.toISOString()}>{formatFieldDate(post.data.publishDate)}</time>
+            <h3 class="text-[15px] font-semibold leading-6 tracking-tight text-gray-800 transition group-hover:text-primary-700 dark:text-gray-100 dark:group-hover:text-primary-300 sm:text-base">
+              {post.data.title}
+            </h3>
+            <span class="text-lg text-primary-600" aria-hidden="true">→</span>
+          </a>
+        ))}
+      </div>
     </div>
-    <div class="space-y-4">
-      {recentPosts.map((post) => (
-        <BlogCard
-          title={post.data.title}
-          description={post.data.description}
-          publishDate={post.data.publishDate}
-          category={post.data.category}
-          tags={post.data.tags}
-          slug={post.id}
-        />
+
+    <aside class="self-start rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-800">
+      <p class="font-mono text-xs font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-400">Explore</p>
+      {[
+        { href: '/blog/', label: 'Blog', detail: '전체 기술 기록' },
+        { href: '/series/', label: 'Series', detail: '연속된 학습 노트' },
+        { href: 'https://kilhyeonjun.github.io/resume/', label: 'Resume', detail: '경력과 포트폴리오' },
+      ].map((route) => (
+        <a href={route.href} class="group flex min-h-16 items-center justify-between border-b border-gray-200 last:border-0 dark:border-gray-700">
+          <span class="font-semibold text-gray-900 dark:text-gray-100">{route.label}<small class="block font-normal text-gray-500 dark:text-gray-400">{route.detail}</small></span>
+          <span class="text-primary-600 transition group-hover:translate-x-1" aria-hidden="true">→</span>
+        </a>
       ))}
-    </div>
+    </aside>
   </section>
 </BaseLayout>
+
+<style>
+  .latest-note::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgb(220 227 236 / 0.55) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(220 227 236 / 0.55) 1px, transparent 1px);
+    background-size: 32px 32px;
+    opacity: 0.28;
+    pointer-events: none;
+  }
+
+  :global(.dark) .latest-note::before {
+    background-image:
+      linear-gradient(rgb(71 85 105 / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(71 85 105 / 0.5) 1px, transparent 1px);
+  }
+
+  .flow-node[data-arrow='true']::after {
+    content: '→';
+    position: absolute;
+    left: calc(100% + 4px);
+    top: 50%;
+    transform: translateY(-52%);
+    color: #2563eb;
+    font-size: 13px;
+  }
+</style>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=390, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>KilPenguin - Field Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#2a1700",
+                        "on-surface-variant": "#45464c",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#ffddb8",
+                        "outline": "#76777d",
+                        "inverse-surface": "#303031",
+                        "surface-container-highest": "#e5e2e3",
+                        "on-primary-container": "#7d8497",
+                        "surface-tint": "#575e70",
+                        "tertiary": "#000000",
+                        "on-primary-fixed": "#141b2b",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "inverse-on-surface": "#f3f0f1",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "inverse-primary": "#c0c6db",
+                        "surface": "#fcf8fa",
+                        "primary": "#000000",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e5e2e3",
+                        "background": "#fcf8fa",
+                        "on-secondary-container": "#fefcff",
+                        "secondary-container": "#316bf3",
+                        "primary-container": "#141b2b",
+                        "secondary-fixed": "#dbe1ff",
+                        "on-tertiary-container": "#b87500",
+                        "surface-dim": "#dcd9db",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#dce2f7",
+                        "on-background": "#1b1b1d",
+                        "surface-container-high": "#eae7e9",
+                        "surface-container-low": "#f6f3f4",
+                        "on-primary": "#ffffff",
+                        "outline-variant": "#c6c6cd",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#f0edee",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#404758",
+                        "tertiary-container": "#2a1700",
+                        "primary-fixed-dim": "#c0c6db",
+                        "on-secondary-fixed-variant": "#003ea8",
+                        "surface-bright": "#fcf8fa",
+                        "secondary": "#0051d5",
+                        "on-surface": "#1b1b1d",
+                        "on-secondary-fixed": "#00174b",
+                        "on-tertiary-fixed-variant": "#653e00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "stack-sm": "8px",
+                        "gutter": "20px", /* Adjusted to 20px for mobile */
+                        "section-gap": "60px", /* Reduced for mobile */
+                        "container-max": "1200px",
+                        "stack-lg": "32px",
+                        "margin-mobile": "20px" /* Adjusted to 20px */
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Inter"],
+                        "mono-code": ["JetBrains Mono"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "mono-label": ["JetBrains Mono"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "mono-code": ["13px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "32px", "fontWeight": "400" }],
+                        "headline-md": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "mono-label": ["14px", { "lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom min height for touch targets */
+        .min-touch-target {
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        body {
+            /* Fallback deep ink if needed, but primary is set to #000000 in config. Will use primary-container for deep ink feel */
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md antialiased pb-24 selection:bg-secondary selection:text-on-secondary">
+<!-- TopAppBar -->
+<header class="w-full sticky top-0 bg-background border-b border-outline-variant z-40">
+<div class="flex justify-between items-center px-margin-mobile h-[60px] w-full max-w-container-max mx-auto">
+<!-- Leading Icon (Menu) -->
+<button aria-label="Menu" class="min-touch-target text-primary cursor-pointer active:opacity-70 transition-opacity">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Headline / Brand Logo -->
+<div class="font-headline-md text-headline-md font-bold tracking-tighter text-primary">
+                KilPenguin
+            </div>
+<!-- Trailing Icon (Search) -->
+<button aria-label="Search" class="min-touch-target text-primary cursor-pointer active:opacity-70 transition-opacity">
+<span class="material-symbols-outlined">search</span>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="w-full px-margin-mobile pt-stack-lg pb-section-gap flex flex-col gap-section-gap max-w-container-max mx-auto">
+<!-- Hero Section -->
+<section class="flex flex-col gap-stack-lg relative">
+<div class="flex flex-col gap-stack-md">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary">
+                    복잡한 백엔드 시스템을 이해하고, 기록하고, 설계합니다.
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                    안정적인 서버 엔지니어링과 확장 가능한 시스템 설계에 집중합니다. 복잡한 문제를 명확한 글로 풀어내며, 기술의 원리를 깊이 탐구하는 것을 즐깁니다.
+                </p>
+</div>
+<!-- CTAs -->
+<div class="flex flex-col sm:flex-row gap-stack-sm w-full">
+<a class="min-touch-target w-full bg-primary-container text-on-primary bg-primary text-on-primary border border-primary font-mono-label text-mono-label uppercase tracking-widest hover:bg-secondary hover:border-secondary transition-colors duration-200" href="#">
+                    이력서 보기
+                </a>
+<a class="min-touch-target w-full bg-transparent text-primary border border-primary font-mono-label text-mono-label uppercase tracking-widest hover:bg-surface-container-low transition-colors duration-200" href="#">
+                    기술 글 읽기
+                </a>
+</div>
+</section>
+<!-- Focus Panel -->
+<section class="border border-outline-variant bg-surface-container-lowest p-gutter flex flex-col gap-stack-md relative">
+<!-- Decorative Accent -->
+<div class="absolute top-0 left-0 w-full h-1 bg-tertiary-fixed-dim"></div>
+<div class="flex flex-col gap-1">
+<h2 class="font-mono-label text-mono-label text-outline uppercase tracking-wider">FOCUS PANEL</h2>
+<p class="font-body-md text-body-md text-primary font-bold">
+                    현재 공부 중인 시리즈: System-design study: 분산 환경에서의 상태 동기화
+                </p>
+</div>
+<div class="font-mono-code text-mono-code text-on-surface-variant">
+                최근 업데이트 2026.07.01
+            </div>
+</section>
+<!-- Featured Article -->
+<section class="flex flex-col gap-stack-md">
+<!-- Image Area -->
+<div class="w-full aspect-[4/3] border border-outline-variant relative overflow-hidden bg-surface-container-low">
+<img class="w-full h-full object-cover" data-alt="A highly detailed technical architectural diagram of a low-latency trading system. The diagram is rendered in a strict, technical blueprint style using a stark white and deep ink black color palette with precise electric blue #2563EB accent lines. It features isometric terminal nodes, precise grid backgrounds, and stark functional typography, conveying a rigorous backend engineering aesthetic without any decorative fluff." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD9QqkjODxXH7Q2WhMCaL-bW8IWPxawj3gwcAPWUrZ3fWKLFRmkEtmkuruzZvhVh1AVCxAGM83PktFVsQOCpQIlAn7O7X4CGsY5a15tkmaKTCGnEh2iEaQOtpRscHZKSb__G16eATk-UsUsov2REZKJAWQAgtHOpdFRMyxmJ85I8e4xTEf7ULT1oGVk-pLQ0-TO4RBqqDExggCX6evsoMDD7tdmsgkHkXqL3pJDTvFvtR9sz6xGSPzqyQ0yJdc7_AKNUV51mr4RxWY"/>
+<div class="absolute inset-0 border border-black/5 pointer-events-none"></div>
+</div>
+<!-- Content Area -->
+<div class="flex flex-col gap-stack-sm">
+<div class="flex items-center gap-2">
+<span class="bg-surface-container-high px-2 py-1 font-mono-code text-[11px] uppercase tracking-wider text-on-surface-variant border border-outline-variant">
+                        Series
+                    </span>
+<span class="font-mono-code text-mono-code text-outline">
+                        2024-10-20
+                    </span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary group-hover:text-secondary transition-colors cursor-pointer">
+                    [가면사배2 시리즈 #13] 증권 거래소 - 낮은 지연과 결정론적 체결
+                </h3>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-3">
+                    초저지연 환경에서 주문을 처리하고 결정론적 체결을 보장하기 위한 증권 거래소 시스템의 구조적 특징과 메시지 처리 최적화 기법에 대해 분석합니다.
+                </p>
+</div>
+</section>
+<!-- Recent Logs -->
+<section class="flex flex-col gap-stack-md">
+<h2 class="font-headline-sm text-headline-sm text-primary border-b border-outline-variant pb-2">
+                Recent Logs
+            </h2>
+<div class="flex flex-col divide-y divide-outline-variant">
+<!-- Log Item 1 -->
+<a class="py-stack-sm flex flex-col gap-1 hover:bg-surface-container-low transition-colors px-2 -mx-2" href="#">
+<h4 class="font-body-md text-body-md text-primary font-semibold truncate">결제 시스템 설계</h4>
+<div class="flex items-center gap-2 font-mono-code text-[12px] text-outline">
+<span>System Design</span>
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>2024-10-15</span>
+</div>
+</a>
+<!-- Log Item 2 -->
+<a class="py-stack-sm flex flex-col gap-1 hover:bg-surface-container-low transition-colors px-2 -mx-2" href="#">
+<h4 class="font-body-md text-body-md text-primary font-semibold truncate">전자 지갑 서비스의 일관성</h4>
+<div class="flex items-center gap-2 font-mono-code text-[12px] text-outline">
+<span>Architecture</span>
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>2024-10-08</span>
+</div>
+</a>
+<!-- Log Item 3 -->
+<a class="py-stack-sm flex flex-col gap-1 hover:bg-surface-container-low transition-colors px-2 -mx-2" href="#">
+<h4 class="font-body-md text-body-md text-primary font-semibold truncate">실실간 리더보드 구현</h4>
+<div class="flex items-center gap-2 font-mono-code text-[12px] text-outline">
+<span>Backend</span>
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>2024-09-28</span>
+</div>
+</a>
+<!-- Log Item 4 -->
+<a class="py-stack-sm flex flex-col gap-1 hover:bg-surface-container-low transition-colors px-2 -mx-2" href="#">
+<div class="flex items-center gap-2">
+<h4 class="font-body-md text-body-md text-primary font-semibold truncate">S3-like object storage</h4>
+<span class="bg-secondary/10 text-secondary px-1.5 py-0.5 text-[10px] font-mono-label border border-secondary/20">NEW</span>
+</div>
+<div class="flex items-center gap-2 font-mono-code text-[12px] text-outline">
+<span>Infrastructure</span>
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>New article</span>
+</div>
+</a>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center h-16 px-4 bg-surface border-t border-outline-variant shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+<!-- Field Notes (Active) -->
+<a class="flex flex-col items-center justify-center text-secondary font-bold min-touch-target transition-all duration-200 active:scale-95 w-full h-full hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]" style="font-variation-settings: 'FILL' 1;">article</span>
+<span class="font-mono-label text-[10px] uppercase tracking-wider">Field Notes</span>
+</a>
+<!-- Resume -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant min-touch-target transition-all duration-200 active:scale-95 w-full h-full hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">description</span>
+<span class="font-mono-label text-[10px] uppercase tracking-wider">Resume</span>
+</a>
+<!-- Search -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant min-touch-target transition-all duration-200 active:scale-95 w-full h-full hover:bg-surface-container-low" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">search</span>
+<span class="font-mono-label text-[10px] uppercase tracking-wider">Search</span>
+</a>
+</nav>
+<!-- Footer -->
+<footer class="w-full mt-section-gap border-t border-outline-variant bg-surface-container-low pb-24 md:pb-12">
+<div class="flex flex-col items-start gap-stack-md p-margin-mobile w-full max-w-container-max mx-auto">
+<div class="font-headline-sm text-headline-sm font-bold text-primary">KilPenguin</div>
+<div class="flex flex-wrap gap-x-6 gap-y-2">
+<a class="font-mono-label text-mono-label text-on-surface-variant hover:text-secondary transition-colors duration-200 min-touch-target" href="#">RSS</a>
+<a class="font-mono-label text-mono-label text-on-surface-variant hover:text-secondary transition-colors duration-200 min-touch-target" href="#">GitHub</a>
+<a class="font-mono-label text-mono-label text-on-surface-variant hover:text-secondary transition-colors duration-200 min-touch-target" href="#">LinkedIn</a>
+<a class="font-mono-label text-mono-label text-on-surface-variant hover:text-secondary transition-colors duration-200 min-touch-target" href="#">Source</a>
+</div>
+<p class="font-mono-code text-mono-code text-outline mt-4">
+                © 2024 KilPenguin. Built for high-density technical analysis.
+            </p>
+</div>
+</footer>
+</body></html>

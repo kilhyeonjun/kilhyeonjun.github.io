@@ -4,7 +4,7 @@
 <button
   id="search-trigger"
   type="button"
-  class="rounded-lg p-2.5 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+  class="flex min-h-11 min-w-11 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
   aria-label="검색"
 >
   <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -14,12 +14,13 @@
 
 <dialog
   id="search-dialog"
+  aria-labelledby="search-dialog-title"
   class="fixed inset-0 z-[100] m-0 h-full max-h-full w-full max-w-full bg-transparent p-0 backdrop:bg-black/50"
 >
   <div class="flex h-full items-start justify-center pt-[10vh]" id="search-dialog-backdrop">
     <div class="mx-4 w-full max-w-xl rounded-xl border border-gray-200 bg-white p-4 shadow-2xl dark:border-gray-700 dark:bg-gray-900" id="search-container">
       <div class="mb-2 flex items-center justify-between">
-        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">검색</span>
+        <span id="search-dialog-title" class="text-sm font-medium text-gray-500 dark:text-gray-400">검색</span>
         <kbd class="rounded border border-gray-300 px-1.5 py-0.5 text-xs text-gray-500 dark:border-gray-600 dark:text-gray-400">ESC</kbd>
       </div>
       <div id="pagefind-search"></div>
@@ -123,6 +124,7 @@
   }
 
   .pagefind-ui__search-clear {
+    min-height: 44px !important;
     padding: 0.5rem 1rem !important;
     border-radius: 6px !important;
     background: var(--pagefind-ui-tag) !important;
@@ -138,6 +140,9 @@
   }
 
   .pagefind-ui__result-link {
+    display: flex !important;
+    min-height: 44px !important;
+    align-items: center !important;
     color: var(--pagefind-ui-primary) !important;
     font-weight: 600 !important;
     text-decoration: none !important;
