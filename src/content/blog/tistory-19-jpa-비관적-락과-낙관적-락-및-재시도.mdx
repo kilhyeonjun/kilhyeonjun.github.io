@@ -1,6 +1,6 @@
 ---
 title: "JPA 비관적 락과 낙관적 락 및 재시도"
-description: "콘서트 예약 프로젝트를 개발하면서 좌석 예약에서 발생하는 동시성 문제에 대해 고민하게 되었다. 여러 사용자가 동시에 같은 좌석을 예약하려고 할 때 동시성 문제가 발생할 수 있는데, 이를 해결하기 위해 JPA에서 제공하는 비관적 락(Pessimistic Lock)과 낙관적 락(Optimistic Lock)을 사용하고, AOP를 활용한 재시도 로직을 통해 동시"
+description: "좌석 예약 동시성 문제를 기준으로 JPA 비관적 락과 낙관적 락, AOP 재시도 방식의 동작과 트레이드오프를 정리했습니다."
 publishDate: 2024-10-24
 category: "Backend Development"
 tags: ["Concurrency", "Java", "JPA"]

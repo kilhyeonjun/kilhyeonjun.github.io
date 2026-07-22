@@ -15,11 +15,14 @@ interface Props {
   description?: string;
   lang?: 'ko' | 'en';
   ogImage?: string;
+  ogType?: 'website' | 'article';
+  canonicalPath?: string;
+  noindex?: boolean;
   wide?: boolean;
 }
 
-const { title, description = 'Backend Developer 기술 블로그', lang = 'ko', ogImage, wide = false } = Astro.props;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const { title, description = 'Backend Developer 기술 블로그', lang = 'ko', ogImage, ogType = 'website', canonicalPath, noindex = false, wide = false } = Astro.props;
+const canonicalURL = new URL(canonicalPath ?? Astro.url.pathname, Astro.site);
 const defaultOgImage = '/og-default.png';
 const ogImageURL = new URL(ogImage ?? defaultOgImage, Astro.site).href;
 const currentPath = Astro.url.pathname;
@@ -39,6 +42,7 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
     <meta name="generator" content={Astro.generator} />
     {import.meta.env.PROD && (
       <meta http-equiv="Content-Security-Policy"
@@ -49,7 +53,7 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
     <link rel="alternate" type="application/rss+xml" title="kil-penguin blog RSS" href="/rss.xml" />
     <script src="/legacy-cache-cleanup.js" defer></script>
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />

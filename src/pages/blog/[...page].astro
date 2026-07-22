@@ -14,7 +14,7 @@ export const getStaticPaths = (async ({ paginate }) => {
 const { page } = Astro.props;
 ---
 
-<BaseLayout title="Blog | KilPenguin Field Notes" description="백엔드 엔지니어링과 시스템 설계 기록" wide>
+<BaseLayout title="Blog | KilPenguin Field Notes" description="백엔드 운영에서 만난 문제와 시스템 설계 원리를 다시 사용할 수 있는 기술 기록으로 정리한 아카이브" wide>
   <section class="mx-auto max-w-5xl py-6 sm:py-10">
     <ArchiveHeader eyebrow="Field Notes" title="기술 기록" description="운영에서 만난 문제와 시스템 설계 원리를 다시 꺼내 쓸 수 있는 형태로 정리합니다." count={page.total} countLabel="notes" />
     <div class="mt-4">

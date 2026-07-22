@@ -60,7 +60,23 @@ def tags_count(fm: str) -> int:
 
 
 def strip_fenced_code(text: str) -> str:
-    return re.sub(r"```[\s\S]*?```", "", text)
+    outside: list[str] = []
+    fence_char: str | None = None
+    fence_len = 0
+    for line in text.splitlines(keepends=True):
+        if fence_char is None:
+            opener = re.match(r"^ {0,3}(`{3,}|~{3,})", line)
+            if opener:
+                marker = opener.group(1)
+                fence_char = marker[0]
+                fence_len = len(marker)
+                continue
+            outside.append(line)
+            continue
+        if re.match(rf"^ {{0,3}}{re.escape(fence_char)}{{{fence_len},}}\s*$", line):
+            fence_char = None
+            fence_len = 0
+    return re.sub(r"`[^`\n]*`", "", "".join(outside))
 
 
 def raw_braces(text: str) -> int:

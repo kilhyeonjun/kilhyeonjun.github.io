@@ -28,7 +28,7 @@ const formattedDate = formatDate(publishDate);
 const formattedUpdatedDate = updatedDate ? formatDate(updatedDate) : undefined;
 ---
 
-<BaseLayout title={`${title} | KilPenguin Field Notes`} description={description} ogImage={ogImage}>
+<BaseLayout title={`${title} | KilPenguin Field Notes`} description={description} ogImage={ogImage} ogType="article">
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   <article data-article-shell class="pb-10 pt-4 sm:pt-8">
     <header class="border-b border-gray-200 pb-8 dark:border-gray-700 sm:pb-10">

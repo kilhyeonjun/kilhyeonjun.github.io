@@ -1,6 +1,6 @@
 ---
 title: "TypeORM Gzip을 활용한 데이터 압축 및 최적화"
-description: "사내 프로젝트에서 구글 빅쿼리 데이터를 조회하고 특정 시점의 스냅샷을 저장해야 하는 요구사항이 있었습니다. 처음엔 MySQL을 선택했지만 향후 S3 연동도 고려하고 있습니다. - MySQL의 JSON 타입 컬럼으로 데이터를 저장했습니다. - 다수의 부동소수점(float) 값이 포함된 JSON 데이터에서 부동소수점 오차로 인한 데이터 불일치가 발생했습니다."
+description: "TypeORM으로 저장하는 대용량 JSON을 Gzip으로 압축해 저장 공간을 줄이고 데이터 일치 문제를 해결한 과정을 정리했습니다."
 publishDate: 2025-04-17
 category: "Performance & Optimization"
 tags: ["TypeORM", "Optimization"]

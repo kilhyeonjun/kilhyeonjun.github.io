@@ -4,11 +4,16 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "check": "astro check",
     "optimize-images": "tsx scripts/optimize-images.ts",
     "build": "astro build && npx pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
     "verify:blog": "python3 scripts/verify-blog-post.py --all --allow-draft",
+    "verify:content": "python3 scripts/test_verify_blog_post.py && python3 scripts/verify-content-quality.py",
+    "verify:seo": "python3 scripts/verify-technical-seo.py",
+    "verify:workflow": "python3 scripts/verify-github-pages-workflow.py",
+    "verify:release": "npm run verify:blog && npm run verify:content && npm run verify:seo && npm run verify:workflow && python3 scripts/verify-homepage-redesign.py && python3 scripts/verify-full-blog-redesign.py",
     "verify:blog:post": "python3 scripts/verify-blog-post.py --allow-draft --strict --min-lines 120",
     "package:blog-review": "python3 scripts/package-blog-review.py",
     "migrate:gatsby": "tsx scripts/migrate-gatsby.ts",
@@ -33,11 +38,13 @@
     "vite": "^6.4.1"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.9",
     "@types/turndown": "^5.0.6",
     "gray-matter": "^4.0.3",
     "sharp": "^0.34.5",
     "tsx": "^4.19.4",
     "turndown": "^7.2.2",
-    "turndown-plugin-gfm": "^1.0.2"
+    "turndown-plugin-gfm": "^1.0.2",
+    "typescript": "^5.9.3"
   }
 }
