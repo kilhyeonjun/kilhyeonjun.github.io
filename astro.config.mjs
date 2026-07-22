@@ -46,7 +46,7 @@ function rehypeLazyImages() {
 }
 
 export default defineConfig({
-  site: 'https://kilhyeonjun.github.io',
+  site: 'https://blog.kilpenguin.com',
   image: {
     service: {
       entrypoint: 'astro/assets/services/sharp',

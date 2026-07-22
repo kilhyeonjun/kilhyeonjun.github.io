@@ -23,9 +23,10 @@ need(base, '<meta name="robots" content="noindex, follow"', "noindex meta")
 need(base, 'content={ogType}', "dynamic Open Graph type")
 need(post, 'ogType="article"', "article Open Graph type")
 need(not_found, "noindex", "404 noindex")
-need(not_found, 'canonicalPath="/404.html"', "404 canonical")
+if "canonicalPath=" in not_found:
+    raise AssertionError("404 must not declare a canonical path")
 need(home, "text-slate-600", "accessible diagram label contrast")
-need(robots, "Sitemap: https://kilhyeonjun.github.io/sitemap-index.xml", "robots sitemap declaration")
+need(robots, "Sitemap: https://blog.kilpenguin.com/sitemap-index.xml", "robots sitemap declaration")
 
 for path in ["src/pages/index.astro", "src/pages/blog/[...page].astro", "src/pages/about.astro"]:
     text = (ROOT / path).read_text(encoding="utf-8")
@@ -46,11 +47,12 @@ if not dist.exists():
     raise AssertionError("dist is missing; run the production build before technical SEO verification")
 not_found_html = (dist / "404.html").read_text(encoding="utf-8")
 need(not_found_html, 'name="robots" content="noindex, follow"', "generated 404 noindex")
-need(not_found_html, 'rel="canonical" href="https://kilhyeonjun.github.io/404.html"', "generated 404 canonical")
+if 'rel="canonical"' in not_found_html:
+    raise AssertionError("generated 404 must not declare a canonical URL")
 article_html = (dist / "blog/가면사배2-시리즈-13-증권-거래소/index.html").read_text(encoding="utf-8")
 need(article_html, 'property="og:type" content="article"', "generated article Open Graph type")
 sitemap = (dist / "sitemap-0.xml").read_text(encoding="utf-8")
-need(sitemap, "https://kilhyeonjun.github.io/about/", "About sitemap entry")
+need(sitemap, "https://blog.kilpenguin.com/about/", "About sitemap entry")
 if "404.html" in sitemap:
     raise AssertionError("404 page must not appear in sitemap")
 

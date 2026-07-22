@@ -37,8 +37,8 @@ def main() -> None:
     require(index, "기술 글 읽기", "writing CTA")
     require(layout, "wide", "wide layout opt-in")
     require(layout, "min-h-11 min-w-11", "44px home target")
-    require(layout, "https://kilhyeonjun.github.io/resume/", "external resume project route")
-    require(index, "https://kilhyeonjun.github.io/resume/", "homepage resume route")
+    require(layout, 'href="/resume/"', "resume project route")
+    require(index, 'href="/resume/"', "homepage resume route")
     require(search, "min-h-11 min-w-11", "44px search target")
     if search.count("min-height: 44px !important") < 2:
         raise AssertionError("Pagefind clear and result links must both be at least 44px tall")

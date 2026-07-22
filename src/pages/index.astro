@@ -15,14 +15,15 @@ const formatFieldDate = (date: Date) => [
   String(date.getDate()).padStart(2, '0'),
 ].join('.');
 
+const siteOrigin = Astro.site!.origin;
 const websiteJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'KilPenguin Field Notes',
-  url: 'https://kilhyeonjun.github.io',
+  url: siteOrigin,
   potentialAction: {
     '@type': 'SearchAction',
-    target: 'https://kilhyeonjun.github.io/blog/?q={search_term_string}',
+    target: `${siteOrigin}/blog/?q={search_term_string}`,
     'query-input': 'required name=search_term_string',
   },
 };
@@ -48,7 +49,7 @@ const websiteJsonLd = {
         안정적인 서버 엔지니어링과 확장 가능한 시스템 설계에 집중합니다. 복잡한 문제를 구조화하고, 배운 원리를 다시 꺼내 쓸 수 있는 기술 글로 남깁니다.
       </p>
       <div class="mt-7 grid grid-cols-2 gap-3 sm:flex">
-        <a href="https://kilhyeonjun.github.io/resume/" class="inline-flex min-h-12 items-center justify-center rounded-full bg-primary-600 px-5 text-sm font-semibold text-white transition hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-400">
+        <a href="/resume/" class="inline-flex min-h-12 items-center justify-center rounded-full bg-primary-600 px-5 text-sm font-semibold text-white transition hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-400">
           이력서 보기 <span aria-hidden="true" class="ml-1">↗</span>
         </a>
         <a href="/blog/" class="inline-flex min-h-12 items-center justify-center rounded-full border border-gray-300 bg-white px-5 text-sm font-semibold text-gray-800 transition hover:border-primary-400 hover:text-primary-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-primary-500 dark:hover:text-primary-300">
@@ -160,7 +161,7 @@ const websiteJsonLd = {
       {[
         { href: '/blog/', label: 'Blog', detail: '전체 기술 기록' },
         { href: '/series/', label: 'Series', detail: '연속된 학습 노트' },
-        { href: 'https://kilhyeonjun.github.io/resume/', label: 'Resume', detail: '경력과 포트폴리오' },
+        { href: '/resume/', label: 'Resume', detail: '경력과 포트폴리오' },
       ].map((route) => (
         <a href={route.href} class="group flex min-h-16 items-center justify-between border-b border-gray-200 last:border-0 dark:border-gray-700">
           <span class="font-semibold text-gray-900 dark:text-gray-100">{route.label}<small class="block font-normal text-gray-500 dark:text-gray-400">{route.detail}</small></span>

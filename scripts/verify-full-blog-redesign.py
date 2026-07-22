@@ -74,7 +74,7 @@ def verify_supporting_pages() -> None:
         raise AssertionError("about must be an indexable page, not an Astro redirect")
     require(about, "data-about-page", "editorial about page")
     require(about, "백엔드 엔지니어", "public-safe professional identity")
-    require(about, "https://kilhyeonjun.github.io/resume/", "resume project link")
+    require(about, 'href="/resume/"', "resume project link")
     require(not_found, "이 경로의 기록을", "mobile-safe 404 heading")
     require(not_found, "찾지 못했습니다.", "404 outcome heading")
     require(not_found, "data-not-found", "field-notes 404 treatment")

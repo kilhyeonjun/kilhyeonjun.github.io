@@ -42,13 +42,13 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex, follow" />}
     <meta name="generator" content={Astro.generator} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
     {import.meta.env.PROD && (
       <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self' 'unsafe-inline' https://giscus.app https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://giscus.app; font-src 'self' data:; img-src 'self' data:; frame-src https://giscus.app; connect-src 'self';" />
     )}
-    <link rel="canonical" href={canonicalURL} />
+    {!noindex && <link rel="canonical" href={canonicalURL} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate" type="application/rss+xml" title="kil-penguin blog RSS" href="/rss.xml" />
     <script src="/legacy-cache-cleanup.js" defer></script>
@@ -101,7 +101,7 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
               {item.label}
             </a>
           ))}
-          <a data-resume-link href="https://kilhyeonjun.github.io/resume/" class="flex min-h-11 items-center rounded-lg border border-gray-200 px-2 text-sm font-semibold text-gray-700 hover:border-primary-400 hover:text-primary-700 dark:border-gray-700 dark:text-gray-200 dark:hover:border-primary-500 dark:hover:text-primary-300 sm:px-3">
+          <a data-resume-link href="/resume/" class="flex min-h-11 items-center rounded-lg border border-gray-200 px-2 text-sm font-semibold text-gray-700 hover:border-primary-400 hover:text-primary-700 dark:border-gray-700 dark:text-gray-200 dark:hover:border-primary-500 dark:hover:text-primary-300 sm:px-3">
             Resume <span aria-hidden="true" class="ml-1 hidden sm:inline">↗</span>
           </a>
           <details id="mobile-navigation" class="relative md:hidden">
@@ -133,7 +133,7 @@ const isCurrent = (href: string) => currentPath === href || currentPath.startsWi
           <a class="inline-flex min-h-11 min-w-11 items-center justify-center px-2 hover:text-primary-600 dark:hover:text-primary-400" href="/about/">About</a>
           <a class="inline-flex min-h-11 min-w-11 items-center justify-center px-2 hover:text-primary-600 dark:hover:text-primary-400" href="https://github.com/kilhyeonjun">GitHub</a>
           <a class="inline-flex min-h-11 min-w-11 items-center justify-center px-2 hover:text-primary-600 dark:hover:text-primary-400" href="/rss.xml">RSS</a>
-          <a class="inline-flex min-h-11 min-w-11 items-center justify-center px-2 hover:text-primary-600 dark:hover:text-primary-400" href="https://kilhyeonjun.github.io/resume/">Resume</a>
+          <a class="inline-flex min-h-11 min-w-11 items-center justify-center px-2 hover:text-primary-600 dark:hover:text-primary-400" href="/resume/">Resume</a>
         </div>
       </div>
     </footer>
