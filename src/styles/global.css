@@ -41,6 +41,10 @@ body {
   @apply dark:prose-invert;
 }
 
+[data-article-shell] {
+  overflow-wrap: anywhere;
+}
+
 /* Heading anchors scroll offset */
 .prose :is(h1, h2, h3, h4, h5, h6) {
   scroll-margin-top: 5rem;
