@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from html.parser import HTMLParser
 from pathlib import Path
+import hashlib
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -151,10 +152,22 @@ def verify_navigation() -> None:
     require(base, "data-resume-link", "non-active external resume action")
 
 
+def verify_convention_polish() -> None:
+    css = read("src/styles/global.css")
+    prefix = "/* Convention-preserving polish · P1 */\n"
+    if css.count(prefix) != 1:
+        raise AssertionError("approved polish layer must appear exactly once")
+    polish = css.split(prefix, 1)[1]
+    digest = hashlib.sha256(polish.encode()).hexdigest()
+    if digest != "e50ba36bbf0c398f328803142c46eccdaef19560b49396f7627b33a9dcaa6922":
+        raise AssertionError(f"approved polish layer changed: {digest}")
+
+
 if __name__ == "__main__":
     verify_archives()
     verify_article()
     verify_built_article_contracts()
     verify_supporting_pages()
     verify_navigation()
+    verify_convention_polish()
     print("full blog redesign contract: PASS")
